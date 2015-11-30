@@ -3,7 +3,8 @@
 
 print(Term) :-
     current_prolog_flag(print_write_options, Options), !,
-    write_term(Term, Options).
+    write_term(Term, Options)
+.
 
 unifie(X) :-
 	select(E, X),
@@ -15,8 +16,7 @@ select(E, [X|Tail]) :-
 .
 
 reduit(decomposition, E, P, Q) :-
-	regle(E, decomposition),
-		
+	regle(E, decomposition),	
 .
 
 
@@ -25,6 +25,17 @@ regle(X, decomposition) :-
 	arg(2, X, Z),
 	check_decomp(Y, Z)
 .
+
+rule(X, Y, P, S, Pp, Sp) :- %rename
+	variable(Y),
+	replace(Pp, X, Y, P),
+	replace(Stmp,X, Y, S),
+	union(Stmp, [X = Y], Sp)
+.
+
+
+
+
 
 check_decomp(X, Y) :-
 	functor(X, NX, AX),
