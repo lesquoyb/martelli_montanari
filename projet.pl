@@ -56,7 +56,7 @@ regle(E, check):-
 
 regle(E, orient):-
 	split(E, T, _),
-	not(var(T))
+	functor(T, _, _)
 .
 
 regle(E, clash):-
@@ -90,15 +90,48 @@ reduit(R, E, P, Q):-
 	apply(R,E,P,Q)
 .
 
-apply(clash, E, P, Q):-
+apply(simplify, E, P, Q) :-
+	delete(P, E, RP),
+	RQ = [E|Q]
+	% pareil que d'habitude, il faut trouver un moyen
+	% de remplacer P et Q par les valeurs de RP et RQ respectivement
+.
+
+apply(rename, E, P, Q) :-
+	delete(P, E, RP),
+	RQ = [E|Q]
+	% pareil que d'habitude, il faut trouver un moyen
+	% de remplacer P et Q par les valeurs de RP et RQ respectivement
+.
+
+apply(expand, E, P, Q) :-
+	delete(P, E, RP),
+	RQ = [E|Q]
+	% pareil que d'habitude, il faut trouver un moyen
+	% de remplacer P et Q par les valeurs de RP et RQ respectivement
+.
+
+apply(clash, _, _, _):-
 	not(true)
 .
 
-apply(check, E, P, Q) :-
+apply(check, _, _, _) :-
 	not(true)
 .
 
-apply(decompose, E, P, Q):-
+apply(orient, E, P, _) :-
+	arg(1, E, L),
+	arg(2, E, R),
+	atom_concat(R, '?=', Z),
+	atom_concat(Z, L, T),
+	delete(P, E, TP),
+	RP = [T|TP],
+	%Idem, P <- TP
+	print('couocucoucou : '),
+	print(RP)
+.
+
+apply(decompose, E, P, _):-
 	split(E, L, R),
 	L =.. [_|TermLeft],
 	R =.. [_|TermRight],
@@ -109,8 +142,7 @@ apply(decompose, E, P, Q):-
 decomp([], [], _).
 decomp([X|XTail], [Y|YTail], P) :-
 	print(X),
-	atom_concat(X, '?=', Z),
-	atom_concat(Z, Y, W),
+	atom_concat(Z, Yname, W),
 	decomp(XTail, YTail, S),
 	P=[W|S]
 .
