@@ -11,10 +11,12 @@ print(Term) :-
 					 ])
 .
 
+
 unifie(P):-
 	member(E, P),
 	%length(E, 1),%pour empêcher une liste vide
-	reduit(_ ,E , P, Q),
+	reduit(_ ,E , P,Q),
+	print('======'),
 	print(Q)
 .
 
@@ -61,7 +63,8 @@ regle(E, clash):-
 	split(E, L, R),
 	is_function(L, N, A),
 	is_function(R, K, B),
-	or(not(K == N), not(A == B))	
+	%or(not(K == N), not(A == B)),
+	not(true)	
 .
 
 split(E, L, R):-
@@ -78,7 +81,7 @@ occur_check(V, T):-
 .
 
 reduit(R, E, P, Q):-
-    not(atom(E)),
+	not(atom(E)),
 	functor(E, ?=, _),
 	regle(E, R),
 	print(R),
@@ -90,11 +93,23 @@ reduit(R, E, P, Q):-
 apply(clash, E, P, Q):-
 	not(true) %TODO probablement n'importe quoi
 .
+
 apply(decompose, E, P, Q):-
-	%TODO
+	split(E, L, R),
+	L =.. [_|TermLeft],
+	R =.. [_|TermRight],
+	decomp(TermLeft, TermRight, S)
+	%TODO Remplacer P par la valeur de S
 .
-apply(R, E, P, Q):-
-	print(nope)
+
+decomp([], [], _).
+decomp([X|XTail], [Y|YTail], P) :-
+	print(X),
+	atom_concat(X, '?=', Z),
+	atom_concat(Z, Y, W),
+	decomp(XTail, YTail, S),
+	P=[W|S]
 .
+
 
 

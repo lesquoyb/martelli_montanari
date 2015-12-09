@@ -11,7 +11,7 @@ unifie(P):-
 .
 
 decompose(E):-
-	compound_name_arity(E,?=, _), %ma version de prolog lève une erreur avec functor pour les fonctions d'arité 0
+	compound_name_arity(E,?=, _), %ma version de prolog lève une erreur avec functor pour les fonctions d'ari
 	arg(1,E, X),
 	arg(2,E, Y),
 	compound_name_arity(X, Z, A),
@@ -20,7 +20,7 @@ decompose(E):-
 
 decompose(E, P, Q):-
 	%et avec plusieurs niveaux de décomposition à faire ?
-	print(E),
+	%print(E),
 	union(E, K, P),
 	print(K),
 	arg(1, E, I),
