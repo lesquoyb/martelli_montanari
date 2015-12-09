@@ -91,7 +91,13 @@ reduit(R, E, P, Q):-
 .
 
 apply(clash, E, P, Q):-
-	not(true) %TODO probablement n'importe quoi
+	delete(P, E, R)
+	%TODO remplacer la valeur de P par celle de R
+.
+
+apply(check, E, P, Q) :-
+	delete(P, E, R)
+	%TODO remplacer la valeur de P par celle de R
 .
 
 apply(decompose, E, P, Q):-
