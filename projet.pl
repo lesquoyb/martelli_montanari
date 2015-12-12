@@ -12,17 +12,23 @@ print(Term) :-
 .
 
 
+
+
 unifie(P):-
 	member(E, P),
 	%length(E, 1),%pour empêcher une liste vide
+	term_variables(P, Q),
 	reduit(_ ,E , P,Q),
 	print('======'),
-	print(Q)
+	print(Q),
+	print('yes')
 .
 
 is_function(F, Name, Arity):- 
-	not(atom(F)),
-	compound_name_arity(F, Name, Arity)
+%	not(atom(F)),
+%	print(F),
+%	functor(F, Name, Arity)
+	compound(F)
 .
 
 
@@ -35,7 +41,8 @@ regle(E, decompose):-
 
 regle(E, simplify):-
 	split(E, _, R),
-	not(var(R))
+	not(var(R)),
+	not(compound(R))
 .
 
 regle(E, rename):-
@@ -45,12 +52,14 @@ regle(E, rename):-
 
 regle(E, expand):-
 	split(E, X, Y),
+	var(X),
 	not(occur_check(X, Y))
 .
 
 regle(E, check):- 
 	split(E, X, Y),
 	not(X == Y),
+	var(X),
 	occur_check(X, Y)
 .
 
@@ -72,18 +81,26 @@ split(E, L, R):-
 	arg(2, E, R)	
 .
 
-occur_check(V, V):- !. %TODO: Achtung !!
-occur_check(V, T):-
+%occur_check(V, V):- !. %TODO: Achtung !!
+/*occur_check(V, T):-
 	%TODO: il se passe quoi si V n'est pas une variable ?
 	is_function(T, _, _),
 	arg(_,T, Z),
 	occur_check(V, Z)
+.*/
+
+occur_check(V, T) :-
+	is_function(T, _, _),
+	term_variables(T, L),
+	memberchk(_V, _L)
+
 .
 
 reduit(R, E, P, Q):-
 	not(atom(E)),
 	functor(E, ?=, _),
 	regle(E, R),
+	print('=='),
 	print(R),
 	print(' '),
 	print(E),
@@ -92,23 +109,20 @@ reduit(R, E, P, Q):-
 
 apply(simplify, E, P, Q) :-
 	delete(P, E, RP),
-	RQ = [E|Q]
-	% pareil que d'habitude, il faut trouver un moyen
-	% de remplacer P et Q par les valeurs de RP et RQ respectivement
+	split(E, LT, RT),
+	LT = RT
 .
 
 apply(rename, E, P, Q) :-
 	delete(P, E, RP),
-	RQ = [E|Q]
-	% pareil que d'habitude, il faut trouver un moyen
-	% de remplacer P et Q par les valeurs de RP et RQ respectivement
+	split(E, LT, RT),
+	LT = RT
 .
 
 apply(expand, E, P, Q) :-
 	delete(P, E, RP),
-	RQ = [E|Q]
-	% pareil que d'habitude, il faut trouver un moyen
-	% de remplacer P et Q par les valeurs de RP et RQ respectivement
+	split(E, LT, RT),
+	LT = RT
 .
 
 apply(clash, _, _, _):-
@@ -119,19 +133,16 @@ apply(check, _, _, _) :-
 	not(true)
 .
 
-apply(orient, E, P, _) :-
-	arg(1, E, L),
-	arg(2, E, R),
+apply(orient, E, P, Q) :-
+	split(E, L, R),
 	atom_concat(R, '?=', Z),
 	atom_concat(Z, L, T),
 	delete(P, E, TP),
-	RP = [T|TP],
+	RP = [T|TP]
 	%Idem, P <- TP
-	print('couocucoucou : '),
-	print(RP)
 .
 
-apply(decompose, E, P, _):-
+apply(decompose, E, P, Q):-
 	split(E, L, R),
 	L =.. [_|TermLeft],
 	R =.. [_|TermRight],
