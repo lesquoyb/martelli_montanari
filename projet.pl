@@ -88,12 +88,18 @@ split(E, L, R):-
 	arg(_,T, Z),
 	occur_check(V, Z)
 .*/
-
 occur_check(V, T) :-
 	is_function(T, _, _),
 	term_variables(T, L),
 	memberchk(_V, _L)
+.
 
+occur_check_list(V, []):-
+	not(true)
+.
+occur_check_list(V, [C|T]) :-
+	occur_check_list(V, T);
+	_V == _C
 .
 
 reduit(R, E, P, Q):-
@@ -135,7 +141,7 @@ apply(check, _, _, _) :-
 
 apply(orient, E, P, Q) :-
 	split(E, L, R),
-	atom_concat(R, '?=', Z),
+	atom_concat(_R, '?=', Z),
 	atom_concat(Z, L, T),
 	delete(P, E, TP),
 	RP = [T|TP]
