@@ -41,7 +41,6 @@ unifie(P):-
 	print(Q),
 	print('yes')
 .
-
 */
 regle(E, decompose):-
 	not(atom(E)),
@@ -79,9 +78,8 @@ regle(E, simplify):-
 
 
 regle(E, rename):-
-	split(E, L, R),
-	var(R),
-	var(L)
+	split(E, _, R),
+	var(R)
 .
 
 regle(E, expand):-
@@ -107,9 +105,8 @@ regle(E, check):-
 .
 
 regle(E, orient):-
-	split(E, L, R),
-	compound(L),
-	var(R)
+	split(E, T, _),
+	functor(T, _, _)
 .
 
 split(E, L, R):-
@@ -117,10 +114,17 @@ split(E, L, R):-
 	arg(2, E, R)
 .
 
+%occur_check(V, V):- !. %TODO: Achtung !!
+/*occur_check(V, T):-
+	%TODO: il se passe quoi si V n'est pas une variable ?
+	is_function(T, _, _),
+	arg(_,T, Z),
+	occur_check(V, Z)
+.*/
 occur_check(V, T) :-
 	compound(T),
 	term_variables(T, L),
-	occur_check_list(V, L)
+	memberchk(_V, _L)
 .
 
 occur_check_list(V, []):-
@@ -128,7 +132,7 @@ occur_check_list(V, []):-
 .
 occur_check_list(V, [C|T]) :-
 	occur_check_list(V, T);
-	V == C
+	_V == _C
 .
 
 replace([], _, _, []):- true. 
@@ -229,7 +233,7 @@ reduce(E, P, Q):-
     not(atom(E)),
 	functor(E, ?=, _),
 	init_rules_list(ListRules),
-	apply_rules(E, ListRules, P, Q)
+	apply_rules(E, ListRules, P, Q),
 .
 
 
