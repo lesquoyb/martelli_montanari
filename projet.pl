@@ -24,19 +24,12 @@ unifie(P):-
 	print('yes')
 .
 
-is_function(F, Name, Arity):- 
-%	not(atom(F)),
-%	print(F),
-%	functor(F, Name, Arity)
-	compound(F)
-.
-
 
 regle(E, decompose):-
 	not(atom(E)),
 	split(E, X, Y),
-	is_function(X, N, A),
-	is_function(Y, N, A)
+	functor(X, _, A),
+	functor(Y, _, A)
 .
 
 regle(E, simplify):-
@@ -46,8 +39,9 @@ regle(E, simplify):-
 .
 
 regle(E, rename):-
-	split(E, _, R),
-	var(R)
+	split(E, L, R),
+	var(R),
+	var(L)
 .
 
 regle(E, expand):-
@@ -64,16 +58,16 @@ regle(E, check):-
 .
 
 regle(E, orient):-
-	split(E, T, _),
-	compound(T)
+	split(E, L, R),
+	compound(L),
+	var(R)
 .
 
 regle(E, clash):-
 	split(E, L, R),
-	is_function(L, N, A),
-	is_function(R, K, B),
-	%or(not(K == N), not(A == B)),
-	not(true)	
+	functor(L, K, A),
+	functor(R, N, B),
+	or(not(K == N),not(A == B))
 .
 
 split(E, L, R):-
@@ -82,7 +76,7 @@ split(E, L, R):-
 .
 
 occur_check(V, T) :-
-	is_function(T, _, _),
+	compound(T),
 	term_variables(T, L),
 	occur_check_list(V, L)
 .
@@ -134,7 +128,7 @@ apply(check, _, _, _) :-
 
 apply(orient, E, P, Q) :-
 	split(E, L, R),
-	atom_concat(_R, '?=', Z),
+	atom_concat(TR, '?=', Z),
 	atom_concat(Z, L, T),
 	delete(P, E, TP),
 	RP = [T|TP]
