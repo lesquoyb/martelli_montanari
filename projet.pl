@@ -53,21 +53,19 @@ regle(E, rename):-
 regle(E, expand):-
 	split(E, X, Y),
 	var(X),
-	copy_term(X, T),
-	not(occur_check(T, Y))
+	not(occur_check(X, Y))
 .
 
 regle(E, check):- 
 	split(E, X, Y),
 	not(X == Y),
 	var(X),
-	copy_term(X, T),
-	occur_check(T, Y)
+	occur_check(X, Y)
 .
 
 regle(E, orient):-
 	split(E, T, _),
-	functor(T, _, _)
+	compound(T)
 .
 
 regle(E, clash):-
