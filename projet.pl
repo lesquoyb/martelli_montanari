@@ -12,19 +12,6 @@ print(Term) :-
 .
 
 
-anti_intersection([], S2, S2):-
-	true
-.
-anti_intersection([E|S1], S2, Q):-
-	member(E, S2),
-	anti_intersection(S1, S2, Q)
-.
-anti_intersection([E|S1], S2 , Q):-
-	not(member(E, S2)),
-	anti_intersection(S1, S2, Qp),
-	union(E, Qp, Q)
-.
-
 apply_reduce([], []):- true .
 apply_reduce([E|P], Q):-
 	reduce(E, [E|P], Q)
@@ -44,24 +31,51 @@ unifie([E|P]):-
 	reduce(E, [E|P], Q),
 	print("finito: "), print(Q)
 .
-
-is_function(F, Name, Arity):-
-	not(atom(F)),
-	compound_name_arity(F, Name, Arity)
+/*
+unifie(P):-
+	member(E, P),
+	%length(E, 1),%pour empêcher une liste vide
+	term_variables(P, Q),
+	reduit(_ ,E , P,Q),
+	print('======'),
+	print(Q),
+	print('yes')
 .
-
-
+*/
 regle(E, decompose):-
 	not(atom(E)),
 	split(E, X, Y),
-	is_function(X, N, A),
-	is_function(Y, N, A)
+	compound(X),
+	compound(Y),
+	compound_name_arity(X, N, A),
+	compound_name_arity(Y, N, A)
 .
+
+/*
+apply(decompose, E, P, Q):-
+	split(E, L, R),
+	L =.. [_|TermLeft],
+	R =.. [_|TermRight],
+	decomp(TermLeft, TermRight, S)
+	%TODO Remplacer P par la valeur de S
+.
+
+decomp([], [], _).
+decomp([X|XTail], [Y|YTail], P) :-
+	print(X),
+	atom_concat(Z, Yname, W),
+	decomp(XTail, YTail, S),
+	P=[W|S]
+.
+*/	
+	
 
 regle(E, simplify):-
 	split(E, _, R),
-	atom(R)%nope, une constante c'est pas forcément un atome, enfin je crois :)
+	not(var(R)),
+	not(compound(R))%TODO: vérifier que ça colle bien à la définission
 .
+
 
 regle(E, rename):-
 	split(E, _, R),
@@ -70,38 +84,55 @@ regle(E, rename):-
 
 regle(E, expand):-
 	split(E, X, Y),
-	is_function(Y, _, _),
+	compound(Y),
 	not(occur_check(X, Y))
 .
 
 regle(E, clash):-
 	split(E, L, R),
-	is_function(L, Nl, Al),
-	is_function(R, Nr, Ar),
+	compound(L),
+	compound(R),
+	compound_name_arity(L, Nl, Al),
+	compound_name_arity(R, Nr, Ar),
 	not( (Nl == Nr, Al == Ar) )
 .
 
 regle(E, check):-
 	split(E, X, Y),
 	not(X == Y),
+	var(X),
 	occur_check(X, Y)
 .
 
 regle(E, orient):-
 	split(E, T, _),
-	not(var(T))
+	functor(T, _, _)
 .
+
 split(E, L, R):-
 	arg(1, E, L),
 	arg(2, E, R)
 .
 
-occur_check(V, V):- !. %TODO: Achtung !!
-occur_check(V, T):-
+%occur_check(V, V):- !. %TODO: Achtung !!
+/*occur_check(V, T):-
 	%TODO: il se passe quoi si V n'est pas une variable ?
 	is_function(T, _, _),
 	arg(_,T, Z),
 	occur_check(V, Z)
+.*/
+occur_check(V, T) :-
+	compound(T),
+	term_variables(T, L),
+	memberchk(_V, _L)
+.
+
+occur_check_list(V, []):-
+	not(true)
+.
+occur_check_list(V, [C|T]) :-
+	occur_check_list(V, T);
+	_V == _C
 .
 
 replace([], _, _, []):- true. 
@@ -113,7 +144,7 @@ replace([A|List], X, T, NList):-
 	args_in_function(A, Args),
 	replace(Args, X, T, Nf),
 	replace(List, X, T, R),
-	union(Nf, R, NList)%TODO: nooooope, surement un set_minus
+	union(Nf, R, NList)%TODO: nooooope, surement un delete
 .
 
 replace([_|List], X, T, [T|NList]):-
@@ -132,32 +163,42 @@ merge_function_args( I, L, R, Q):-
 	union(Rp, [ArgL ?= ArgR], Q)
 .	
 
+apply(simplify, E, P, Q) :-
+	delete(P, E, RP),
+	split(E, LT, RT),
+	LT = RT
+.
 apply(rename, E, P, S):-
 	split(E, L, R),
 	replace(P, L, R, Pb),
-	%set_minus(E, P, Pp),
+	%delete(P, E, Pp),
 	%replace(Pp, L, R, Pt ),
 	union(E, Pb, S)
 .
-apply(simplify, E, P, S):-
-	split(E, _, _),
-	S = P
-	%TODO
+/*
+apply(rename, E, P, Q) :-
+	delete(P, E, RP),
+	split(E, LT, RT),
+	LT = RT
 .
-apply(expand, _, P, S):-
-S = P,
-true %TODO
+*/
+
+apply(expand, E, P, Q) :-
+	delete(P, E, RP),
+	split(E, LT, RT),
+	LT = RT
 .
+
 apply(check, _, _, bottom):- false . %TODO: surement de la merde
-apply(orient, _, P, S):-
-S= P,
-true %TODO
+apply(orient, E, P, [R ?= L |Tp]) :-
+	split(E, L, R),
+	delete(P, E, TP)
 .
 apply(decompose, E, P, S):-
 	split(E, L, R),
 	compound_name_arity(L, _, Arity),
 	merge_function_args(Arity, L, R, Res), 
-	set_minus(E, P, Pp),
+	delete(P, E, Pp),
 	union(Res, Pp, S)
 .
 
@@ -166,6 +207,12 @@ apply(clash, _, _, bottom):- false . %TODO: surement n'imp'
 
 apply_rules(_, [], P, P):- true.
 apply_rules(E, [FirstRule | ListRules], P, Q):-
+
+	write('=='),
+	print(FirstRule),
+	write(' '),
+	print(E),
+	nl,
 	(
 		regle(E, FirstRule) ->
 			print(FirstRule),write(", est appliqué sur: "), print(E),nl,
@@ -186,16 +233,9 @@ reduce(E, P, Q):-
     not(atom(E)),
 	functor(E, ?=, _),
 	init_rules_list(ListRules),
-	apply_rules(E, ListRules, P, Q),
-	write("fin des réductions: "),print(Q),nl
+	apply_rules(E, ListRules, P, Q)
 .
 
 
-set_minus(_, [], []) :- print('on ne devrait jamais passer par ici dans ce projet'),nl , !.
-set_minus(Elem, [Elem|Set], Set):- ! .%Achtung
-set_minus(Elem, [E|Set], Ret):-
-	set_minus(Elem, Set, R),
-	union(R, [E], Ret)
-.
 
 
