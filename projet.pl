@@ -72,8 +72,9 @@ decomp([X|XTail], [Y|YTail], P) :-
 	
 
 regle(E, simplify):-
-	split(E, _, R),
+	split(E, L, R),
 	not(var(R)),
+	var(L),
 	not(compound(R))%TODO: vérifier que ça colle bien à la définission
 .
 
@@ -108,8 +109,7 @@ regle(E, check):-
 
 regle(E, orient):-
 	split(E, L, R),
-	compound(L),
-	var(R)
+	compound(L)
 .
 
 split(E, L, R):-
