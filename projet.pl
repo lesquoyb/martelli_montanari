@@ -53,14 +53,16 @@ regle(E, rename):-
 regle(E, expand):-
 	split(E, X, Y),
 	var(X),
-	not(occur_check(X, Y))
+	copy_term(X, T),
+	not(occur_check(T, Y))
 .
 
 regle(E, check):- 
 	split(E, X, Y),
 	not(X == Y),
 	var(X),
-	occur_check(X, Y)
+	copy_term(X, T),
+	occur_check(T, Y)
 .
 
 regle(E, orient):-
@@ -81,17 +83,10 @@ split(E, L, R):-
 	arg(2, E, R)	
 .
 
-%occur_check(V, V):- !. %TODO: Achtung !!
-/*occur_check(V, T):-
-	%TODO: il se passe quoi si V n'est pas une variable ?
-	is_function(T, _, _),
-	arg(_,T, Z),
-	occur_check(V, Z)
-.*/
 occur_check(V, T) :-
 	is_function(T, _, _),
 	term_variables(T, L),
-	memberchk(_V, _L)
+	occur_check_list(V, L)
 .
 
 occur_check_list(V, []):-
@@ -99,7 +94,7 @@ occur_check_list(V, []):-
 .
 occur_check_list(V, [C|T]) :-
 	occur_check_list(V, T);
-	_V == _C
+	V == C
 .
 
 reduit(R, E, P, Q):-
