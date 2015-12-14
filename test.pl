@@ -97,7 +97,7 @@ test_apply_check() :-
 	writeOK
 .
 
-test_apply_simplify() :- 
+test_regle_simplify() :- 
 	writeln("==== Regle : simplify ===="),
 
 	write("X ?= a"),
