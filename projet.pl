@@ -15,20 +15,16 @@ print(Term) :-
 apply_reduce([], []):- true .
 apply_reduce([E|P], Q):-
 	reduce(E, [E|P], Q)
-	%intersection(P, Qp, Ei),
-	%anti_intersection(P, Qp, Eai),
-	%write('avant: '), print(P), write(", inter: "),print(Qp), write(" => "),print(Ei),nl,
-	%print(P), write(" AI: "), print(Qp), write(" => "),print(Eai),nl,
-	%apply_reduce(Qp, Qz) ;
-	%apply_reduce(Eai, Qz),
-	%union( Eai, Qz, Q)
+	%apply_reduce(Qp, Q)
 .
 
+unifie([]):- true.
 unifie([E|P]):-
 	%length(E, 1),%pour empêcher une liste vide
 	%apply_reduce(P, Q),
 	write("passage dans unifie, E: "),print(E),nl,
-	reduce(E, [E|P], Q),
+	apply_reduce([E|P], Q),
+	%reduce(E, [E|P], Q),
 	print("finito: "), print(Q)
 .
 /*
