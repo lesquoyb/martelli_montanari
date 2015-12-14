@@ -42,7 +42,7 @@ test_apply_decompose():-
 	writeOK,
 
 	write("f(g(X), W) ?= f(A, Q), [g(X) ?= A, W ?= Q]"),
-	apply(decompose, f(g(X), W) ?= f(A, Q), [f(g(X), W) ?= f(A, Q)], [f(_X)?=_A,_W?=_Q]),
+	apply(decompose, f(g(X), W) ?= f(A, Q), [f(g(X), W) ?= f(A, Q)], [g(X)?=A,W?=Q]),
 	writeOK
 .
 
