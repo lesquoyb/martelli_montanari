@@ -86,13 +86,12 @@ split(E, L, R):-
 	arg(2, E, R)
 .
 
-occur_check(V,V):- true.
 occur_check(V, T) :-
+	var(V),
 	compound(T),
 	term_variables(T, L),
 	occur_check_list(V, L)
 .
-
 occur_check_list(_, []):-
 	not(true)
 .
@@ -100,6 +99,18 @@ occur_check_list(V, [C|T]) :-
 	occur_check_list(V, T);
 	V == C
 .
+apply(simplify, E, P, Q) :-
+	split(E, X, T),
+	X = T,
+	delete(P, E, Q)
+.
+apply(rename, E, P, Q):-
+	split(E, X, T),
+	X = T,
+	delete(P, E, Q)
+.
+
+/*
 
 merge_function_args(0, _, _,  []):- 
 	true,
@@ -113,18 +124,7 @@ merge_function_args( I, L, R, Q):-
 	union(Rp, [ArgL ?= ArgR], Q)
 .	
 
-apply(simplify, E, P, Q) :-
-	split(E, X, T),
-	X = T,
-	delete(P, E, Q)
-.
-apply(rename, E, P, Q):-
-	split(E, X, T),
-	X = T,
-	delete(P, E, Q)
-.
 
-/*
 replace([], _, _, []):- true. 
 replace([A|List], X, T, NList):-
 	%remplace X par T si X est une variable
@@ -170,10 +170,15 @@ apply(orient, E, P, [ R ?= L | Tp ]) :-
 	split(E, L, R),
 	delete(P, E, Tp)
 .
+unif_list([], [],[]):- true.
+unif_list([L|List1], [R|List2], [L ?= R| Rp]):-
+	unif_list(List1, List2, Rp)
+.
 apply(decompose, E, P, S):-
 	split(E, L, R),
-	compound_name_arity(L, _, Arity),
-	merge_function_args(Arity, L, R, Res), 
+	L =.. [_|ArgsL],
+	R =.. [_|ArgsR],
+	unif_list(ArgsL, ArgsR, Res),
 	delete(P, E, Pp),
 	union(Res, Pp, S)
 .
