@@ -108,7 +108,7 @@ regle(E, check):-
 .
 
 regle(E, orient):-
-	split(E, L, R),
+	split(E, L, _),
 	compound(L)
 .
 
@@ -117,13 +117,14 @@ split(E, L, R):-
 	arg(2, E, R)
 .
 
+occur_check(V,V):- true.
 occur_check(V, T) :-
 	compound(T),
 	term_variables(T, L),
 	occur_check_list(V, L)
 .
 
-occur_check_list(V, []):-
+occur_check_list(_, []):-
 	not(true)
 .
 occur_check_list(V, [C|T]) :-
@@ -160,9 +161,11 @@ merge_function_args( I, L, R, Q):-
 .	
 
 apply(simplify, E, P, Q) :-
-	delete(P, E, RP),
+	%delete(P, E, RP),
 	split(E, LT, RT),
-	LT = RT
+	LT = RT,
+	Q = P
+	%TODO: mais bordel non
 .
 apply(rename, E, P, S):-
 	split(E, L, R),
@@ -170,25 +173,29 @@ apply(rename, E, P, S):-
 	%delete(P, E, Pp),
 	%replace(Pp, L, R, Pt ),
 	union(E, Pb, S)
+	%TODO: faux ?
 .
+
 /*
 apply(rename, E, P, Q) :-
-	delete(P, E, RP),
+	%delete(P, E, RP),
 	split(E, LT, RT),
 	LT = RT
 .
 */
 
 apply(expand, E, P, Q) :-
-	delete(P, E, RP),
+	%delete(P, E, RP),
 	split(E, LT, RT),
-	LT = RT
+	LT = RT,
+	Q = P
+	%TODO: c'est n'importe quoi ça
 .
 
 apply(check, _, _, bottom):- false . %TODO: surement de la merde
-apply(orient, E, P, [R ?= L |Tp]) :-
+apply(orient, E, P, [ R ?= L | Tp ]) :-
 	split(E, L, R),
-	delete(P, E, TP)
+	delete(P, E, Tp)
 .
 apply(decompose, E, P, S):-
 	split(E, L, R),
