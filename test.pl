@@ -1,10 +1,13 @@
-mother_child(trude, sally).
- 
-father_child(tom, sally).
-father_child(tom, erica).
-father_child(mike, tom).
- 
-sibling(X, Y)      :- parent_child(Z, X), parent_child(Z, Y).
- 
-parent_child(X, Y) :- father_child(X, Y).
-parent_child(X, Y) :- mother_child(X, Y).
+:-
+	op(20, xfy,[?=]),
+	[projet]
+.
+
+test_apply():-
+	apply(decompose, f(a) ?= f(a), [f(a) ?= f(a)], _),
+	write("apply(decompose, f(a) ?= f(b), [f(a) ?= f(b)], [a ?= b])"),
+	apply(decompose, f(a) ?= f(b), [f(a) ?= f(b)], [a ?= b]),
+	write(": ok"), nl,
+	apply(decompose, f(a) ?= g(a), [f(a) ?= g(a)], _),
+	apply(decompose, f(a) ?= f(a, b), [f(a) ?= f(a, b)], _)
+.
