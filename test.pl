@@ -6,7 +6,8 @@
 writeOK() :- write(" : ok"), nl.
 
 tests() :-
-	write("Debut des tests : "), nl,
+	writeln("Debut des tests : "), nl,
+	writeln("==== Test : Apply ===="), nl,
 	%test_apply_decompose,
 	%test_apply_rename,
 	%test_apply_simplify,
@@ -14,6 +15,10 @@ tests() :-
 	test_apply_orient,
 	test_apply_clash,
 	test_apply_check,
+
+	nl, writeln("==== Test : Regle ===="), nl,
+	test_regle_simplify(),
+
 	write("Tous les tests sont passé avec succes")
 .
 
@@ -89,5 +94,13 @@ test_apply_check() :-
 
 	write("check"),
 	not(apply(check, _, _, bottom)),
+	writeOK
+.
+
+test_apply_simplify() :- 
+	writeln("==== Regle : simplify ===="),
+
+	write("X ?= a"),
+	regle(X?=a, simplify),
 	writeOK
 .
