@@ -19,26 +19,15 @@ apply_reduce([E|P], Q):-
 .
 
 unifie([]):- true.
+unifie(bottom):- false.
 unifie([E|P]):-
-	%length(E, 1),%pour empêcher une liste vide
-	%apply_reduce(P, Q),
 	write("passage dans unifie, E: "),print(E),nl,
 	apply_reduce([E|P], Q),
+%	unifie(Q),
 	%reduce(E, [E|P], Q),
 	print("finito: "), print(Q)
 .
-/*
-unifie(P):-
-	member(E, P),
-	%length(E, 1),%pour empêcher une liste vide
-	term_variables(P, Q),
-	reduit(_ ,E , P,Q),
-	print('======'),
-	print(Q),
-	print('yes')
-.
 
-*/
 regle(E, decompose):-
 	not(atom(E)),
 	split(E, X, Y),
@@ -48,23 +37,6 @@ regle(E, decompose):-
 	compound_name_arity(Y, N, A)
 .
 
-/*
-apply(decompose, E, P, Q):-
-	split(E, L, R),
-	L =.. [_|TermLeft],
-	R =.. [_|TermRight],
-	decomp(TermLeft, TermRight, S)
-	%TODO Remplacer P par la valeur de S
-.
-
-decomp([], [], _).
-decomp([X|XTail], [Y|YTail], P) :-
-	print(X),
-	atom_concat(Z, Yname, W),
-	decomp(XTail, YTail, S),
-	P=[W|S]
-.
-*/	
 	
 
 regle(E, simplify):-
@@ -128,6 +100,30 @@ occur_check_list(V, [C|T]) :-
 	V == C
 .
 
+merge_function_args(0, _, _,  []):- 
+	true,
+	! %Achtung 
+.
+merge_function_args( I, L, R, Q):-
+	succ(Index, I),
+	merge_function_args(Index, L, R, Rp),
+	arg(I, L, ArgL),
+	arg(I, R, ArgR),
+	union(Rp, [ArgL ?= ArgR], Q)
+.	
+
+apply(simplify, E, P, Q) :-
+	split(E, X, T),
+	X = T,
+	delete(P, E, Q)
+.
+apply(rename, E, P, Q):-
+	split(E, X, T),
+	X = T,
+	delete(P, E, Q)
+.
+
+/*
 replace([], _, _, []):- true. 
 replace([A|List], X, T, NList):-
 	%remplace X par T si X est une variable
@@ -144,48 +140,28 @@ replace([_|List], X, T, [T|NList]):-
 	replace(List, X, T, NList)
 .
 
-merge_function_args(0, _, _,  []):- 
-	true,
-	! %Achtung 
-.
-merge_function_args( I, L, R, Q):-
-	succ(Index, I),
-	merge_function_args(Index, L, R, Rp),
-	arg(I, L, ArgL),
-	arg(I, R, ArgR),
-	union(Rp, [ArgL ?= ArgR], Q)
-.	
 
-apply(simplify, E, P, Q) :-
-	%delete(P, E, RP),
-	split(E, LT, RT),
-	LT = RT,
-	Q = P
-	%TODO: mais bordel non
-.
-apply(rename, E, P, S):-
-	split(E, L, R),
-	replace(P, L, R, Pb),
-	%delete(P, E, Pp),
-	%replace(Pp, L, R, Pt ),
-	union(E, Pb, S)
-	%TODO: faux ?
-.
 
-/*
 apply(rename, E, P, Q) :-
 	%delete(P, E, RP),
 	split(E, LT, RT),
 	LT = RT
 .
+
+decomp([], [], _).
+decomp([X|XTail], [Y|YTail], P) :-
+	print(X),
+	atom_concat(Z, Yname, W),
+	decomp(XTail, YTail, S),
+	P=[W|S]
+.
 */
 
+
 apply(expand, E, P, Q) :-
-	%delete(P, E, RP),
-	split(E, LT, RT),
-	LT = RT,
-	Q = P
-	%TODO: c'est n'importe quoi ça
+	split(E, X, T),
+	X = T,
+	delete(P, E, Q)
 .
 
 apply(check, _, _, bottom):- false . %TODO: surement de la merde
@@ -200,7 +176,17 @@ apply(decompose, E, P, S):-
 	delete(P, E, Pp),
 	union(Res, Pp, S)
 .
+/*
+apply(decompose, E, P, Q):-
+	split(E, L, R),
+	L =.. [_|TermLeft],
+	R =.. [_|TermRight],
+	decomp(TermLeft, TermRight, S)
+	%TODO Remplacer P par la valeur de S
+.
 
+
+*/
 apply(clash, _, _, bottom):- false . %TODO: surement n'imp'
 
 
