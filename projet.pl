@@ -108,7 +108,8 @@ regle(E, check):-
 .
 
 regle(E, orient):-
-	split(E, L, _),
+	split(E, L, R),
+	var(R),
 	compound(L)
 .
 
