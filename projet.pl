@@ -12,20 +12,14 @@ print(Term) :-
 .
 
 
-apply_reduce([], []):- true .
-apply_reduce([E|P], Q):-
-	reduce(E, [E|P], Q)
-	%apply_reduce(Qp, Q)
-.
-
 unifie([]):- true.
 unifie(bottom):- false.
-unifie([E|P]):-
+unifie([E|P]) :-
 	write("passage dans unifie, E: "),print(E),nl,
-	apply_reduce([E|P], Q),
-%	unifie(Q),
-	%reduce(E, [E|P], Q),
-	print("finito: "), print(Q)
+	regle(E, R),
+	write("on applique la règle: "),print(R),nl,
+	apply(R, E, P, Q),
+	unifie(Q)
 .
 
 regle(E, decompose):-
@@ -55,6 +49,7 @@ regle(E, rename):-
 
 regle(E, expand):-
 	split(E, X, Y),
+	var(X),
 	compound(Y),
 	not(occur_check(X, Y))
 .
@@ -78,7 +73,7 @@ regle(E, check):-
 regle(E, orient):-
 	split(E, L, R),
 	var(R),
-	compound(L)
+	not(var(L))
 .
 
 split(E, L, R):-
@@ -116,55 +111,6 @@ apply(rename, E, P, Q):-
 	delete_elem(E, P, Q)
 .
 
-/*
-
-merge_function_args(0, _, _,  []):- 
-	true,
-	! %Achtung 
-.
-merge_function_args( I, L, R, Q):-
-	succ(Index, I),
-	merge_function_args(Index, L, R, Rp),
-	arg(I, L, ArgL),
-	arg(I, R, ArgR),
-	union(Rp, [ArgL ?= ArgR], Q)
-.	
-
-
-replace([], _, _, []):- true. 
-replace([A|List], X, T, NList):-
-	%remplace X par T si X est une variable
-	%TODO: tester remplacer plusieurs fois dans la même fonction / niveaux récursion sup
-	occur_check(X, A),
-	%real_replace(A,X,Y),
-	args_in_function(A, Args),
-	replace(Args, X, T, Nf),
-	replace(List, X, T, R),
-	union(Nf, R, NList)%TODO: nooooope, surement un delete
-.
-
-replace([_|List], X, T, [T|NList]):-
-	replace(List, X, T, NList)
-.
-
-
-
-apply(rename, E, P, Q) :-
-	%delete(P, E, RP),
-	split(E, LT, RT),
-	LT = RT
-.
-
-decomp([], [], _).
-decomp([X|XTail], [Y|YTail], P) :-
-	print(X),
-	atom_concat(Z, Yname, W),
-	decomp(XTail, YTail, S),
-	P=[W|S]
-.
-*/
-
-
 apply(expand, E, P, Q) :-
 	split(E, X, T),
 	X = T,
@@ -184,22 +130,11 @@ apply(decompose, E, P, S):-
 	delete_elem(E, P, Pp),
 	union(Res, Pp, S)
 .
-/*
-apply(decompose, E, P, Q):-
-	split(E, L, R),
-	L =.. [_|TermLeft],
-	R =.. [_|TermRight],
-	decomp(TermLeft, TermRight, S)
-	%TODO Remplacer P par la valeur de S
-.
-
-
-*/
 apply(clash, _, _, bottom):- false . %TODO: surement n'imp'
 
 
 
-delete_elem(_, [], []) :- print('on ne devrait jamais passer par ici dans ce projet'),nl , !.
+delete_elem(_, [], []) :- !.%Achtung 
 delete_elem(Elem, [Elem|Set], Set):- ! .%Achtung
 delete_elem(Elem, [E|Set], [E|R]):-
 	delete_elem(Elem, Set, R)
