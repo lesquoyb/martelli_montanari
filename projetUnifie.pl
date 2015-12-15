@@ -35,6 +35,33 @@ unifie([E|P]) :-
 	unifie(Q)
 .
 
+unifie(P, S) :-
+	write("==== unifie ===="), nl,
+	copy_term(P, SauvP),
+	choix(P, SauvP, S, E, R),
+	apply(R, E, P, Q),
+	unifie(Q, S)
+.
+
+choix([], _, [], _, _) :-
+	true
+.
+
+choix([], SauvP, [R|S], Equ, Reg) :-
+	choix(SauvP, SauvP, S, Equ, Reg)
+.
+
+choix([E|P], SauvP, [R|S], Equ, Reg) :-
+	write(E), write(" => "), write(R), nl,
+	(	
+		regle(E, R) ->
+		Equ = E,
+		Reg = R
+		;
+		choix(P, SauvP, [R|S], Equ, Reg)
+	)	
+.
+
 regle(E, decompose):-
 	not(atom(E)),
 	split(E, X, Y),
