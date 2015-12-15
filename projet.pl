@@ -31,6 +31,7 @@ select_strat(dernier, P, E, R):-
 apply_strat([], _):- true, !.
 apply_strat(bottom, _):- false, !.
 apply_strat(P, Strat):-
+	echo("system: "),echo(P),echo("\n"),
 	select_strat(Strat, P, E, R),
 	echo(R),echo(": "),echo(E),echo("\n"),
 	reduit(R, E, P, Q),
@@ -44,7 +45,6 @@ unifie(P, S):-
 
 trace_unif(P,S):-
 	set_echo,
-	echo("system: "),echo(P),echo("\n"),
 	(
 		apply_strat(P, S), echo("Yes"),!
 	;	
