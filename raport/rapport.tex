@@ -93,8 +93,8 @@ captionpos = b
       % Upper part of the page. The '~' is needed because \\
       % only works if a paragraph has started.
       ~\\[4cm]
-      \textsc{\LARGE Universite de Lorraine}\\[1.5cm]
-      \textsc{\Large Faculte de Science et Technologie}\\[0.5cm]
+      \textsc{\LARGE Université de Lorraine}\\[1.5cm]
+      \textsc{\Large Faculté de Science et Technologie}\\[0.5cm]
       \textsc{\Large Master 1 Informatique}\\[0.5cm]
       % Title
       \HRule \\[0.4cm]
@@ -116,11 +116,11 @@ captionpos = b
 \chapter*{Question 1}
 
 \section*{Les premiers pas vers l'unification}
-Dans un premier temps, nous avons decider d'écrire tous les prédicats de rêgle (qui permettent de savoir quelle rêgle utiliser) et les prédicats de réduction. Commencer par ces prédicats aura permis d'avoir une base de travaille et d'emprunter un processus de developpement iteratif.
+Dans un premier temps, nous avons décidé d'écrire tous les prédicats de règle (qui permettent de savoir quelle règle utiliser) et les prédicats de réduction. Commencer par ces prédicats aura permis d'avoir une base de travaille et d'emprunter un processus de développement itératif.
 
 \paragraph{Exemple d'un prédicat $regle$} ~\\
 
-\begin{lstlisting}[caption ={Choix de la regle $simplify$}]
+\begin{lstlisting}[caption ={Choix de la règle $simplify$}]
 regle(E, simplify):-
 	split(E, L, R),
 	not(var(R)),
@@ -128,27 +128,26 @@ regle(E, simplify):-
 	not(compound(R))
 .
 \end{lstlisting}
-Ici nous avons le predicat regle pour l'unification $simplify$, le but de ce predicat est de revoyer vrai si simplify est applicable a une equation $E$. Le predicat est faux si la regle n'est pas applicable. \\
-Toutes les regles on été instanciés pour chacunes des unifications possible.
+Ici nous avons le prédicat regle pour l'unification avec $simplify$, le but de ce prédicat est de renvoyer vrai si simplify est applicable à une equation $E$. Le prédicat est faux si la règle n'est pas applicable. \\
+Toutes les règles on été instanciées pour chacune des unifications possible.
 
+\paragraph{Exemple d'un prédicat $reduit$} ~\\
 
-\paragraph{Exemple d'un predicat $reduit$} ~\\
-
-\begin{lstlisting}[caption ={Application de la reduction $expand$}]
+\begin{lstlisting}[caption ={Application de la réduction $expand$}]
 reduit(expand, E, P, Q) :-
 	split(E, X, T),
 	X = T,
 	delete_elem(E, P, Q)
 .
 \end{lstlisting}
-Le prédicat $reduit$ permet de d'appliquer la réduction approprié à l'équation $E$. Ici le prédicat $reduit$ applique la transformation $expand$ à l'equation $E$. 
+Le prédicat $reduit$ permet d'appliquer la réduction approprié à l'équation $E$. Ici le prédicat $reduit$ applique la transformation $expand$ à l'équation $E$ et crée $Q$ le nouvel ensemble de travail. 
 
 \section*{Unification}
-A la suite de l'implémentation de ces prédicats, nous avons mis en place le système de prédicat qui permet résoudre l'unificateur le plus général. Pour cela, nous avons implémenter le prédicat $unifie$. C'est ce prédicat qui fait le lien entre les prédicats de choix de transformation ($regle$) et ceux d'application de cette transformation.
+A la suite de l'implémentation de ces prédicats, nous avons mis en place le système de prédicat qui permet résoudre l'unificateur le plus général. Pour cela, nous avons implémenté le prédicat $unifie$. C'est ce prédicat qui fait le lien entre les prédicats de choix de transformation ($regle$) et ceux d'application de cette transformation.
 
 \begin{lstlisting}[caption ={Prédicat d'unification d'un système d'équation}]
 unifie([E|P]) :-
-write("systeme: "),print([E|P]),nl,
+write("system: "),print([E|P]),nl,
 regle(E, R),
 write(R), write(": "), write(E), nl,
 reduit(R, E, P, Q),
@@ -158,113 +157,60 @@ unifie(Q)
 
 
 \chapter*{Question 2}
-La rapidité d'exécution de l'algorithme dépend du choix plus ou moins judicieux des rêgles à exécuter en premier sur le système d'équation. C'est pourquoi il faut mettre en place un système qui prenne en compte le l'ordre dans lequel les rêgles sont exécutés.
-Nous avons donc décidé d'implémenter quatre methode de choix :
+La rapidité d'exécution de l'algorithme dépend du choix plus ou moins judicieux des règles à exécuter en premier sur le système d'équation. C'est pourquoi il faut mettre en place un système qui prenne en compte le l'ordre dans lequel les équations (ou les règles) sont choisies.
+Nous avons donc décidé d'implémenter quatre méthodes de choix :
 \begin{itemize}
-\item Choix du premier : la premiere rêgle possible est appliqué
-\item Choix pondéré : les rêgles sont évalué dans un ordre près établit qui est plus judicieux que l'ordre normal
-\item Choix aléatoire : les équations sont prise de façon aléatoire, on y applique la rêgle qui est possible
-\item Choix du dernier : la dernière équation possible est appliqué
+\item Choix du premier : la première équation de l'ensemble est résolue
+\item Choix pondéré : les équations sont choisies en fonction des règles que l'on peut appliquer dessus. Les règles sont classées dans un ordre préétablit qui est plus judicieux dans certains cas . Pour notre exemple les règles $clash$ et $check$ sont prioritaire, ce qui permet d'arrêter l'exécution de l'algorithme au plus tôt si jamais le système d'équation est insolvable.
+\item Choix aléatoire : les équations sont prise de façon aléatoire, on y applique la règle qui est possible
+\item Choix du dernier : la dernière équation du système est choisie
 \end{itemize}
 
-Grâce à ces quatre possibilités, nous pouvons voir la difference d'execution entre ces differents methodes de choix :
-\begin{lstlisting}[caption ={Exemple d'execution avec le choix pondéré }]
-?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], pondere).
-systeme: [f(_G1769,_G1770,h(_G1766,_G1767))?=f(g(_G1773),h(a),h(e,r)),_G1773?=f(_G1770)]
-decompose: f(_G1769,_G1770,h(_G1766,_G1767))?=f(g(_G1773),h(a),h(e,r))
-systeme: [_G1769?=g(_G1773),_G1770?=h(a),h(_G1766,_G1767)?=h(e,r),_G1773?=f(_G1770)]
-decompose: h(_G1766,_G1767)?=h(e,r)
-systeme: [_G1766?=e,_G1767?=r,_G1769?=g(_G1773),_G1770?=h(a),_G1773?=f(_G1770)]
-simplify: _G1766?=e
-systeme: [_G1767?=r,_G1769?=g(_G1773),_G1770?=h(a),_G1773?=f(_G1770)]
-simplify: _G1767?=r
-systeme: [_G1769?=g(_G1773),_G1770?=h(a),_G1773?=f(_G1770)]
-expand: _G1769?=g(_G1773)
-systeme: [_G1770?=h(a),_G1773?=f(_G1770)]
-expand: _G1770?=h(a)
-systeme: [_G1773?=f(h(a))]
-expand: _G1773?=f(h(a))
-X = g(f(h(a))),
-Y = h(a),
-C = e,
-V = r,
-Z = f(h(a)).
+Grâce à ces quatre possibilités, nous pouvons voir la différence d'exécution entre ces différentes méthodes de choix d'équation :
+\begin{lstlisting}[caption ={Exemple d'exécution avec le choix de la première équation }]
+3 ?- trace_unif([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y), f(g) ?= f(a, b)], premier).
+system: [f(_G1995,_G1996,h(_G1992,_G1993))?=f(g(_G1999),h(a),h(e,r)),_G1999?=f(_G1996),f(g)?=f(a,b)]
+decompose: f(_G1995,_G1996,h(_G1992,_G1993))?=f(g(_G1999),h(a),h(e,r))
+system: [_G1995?=g(_G1999),_G1996?=h(a),h(_G1992,_G1993)?=h(e,r),_G1999?=f(_G1996),f(g)?=f(a,b)]
+expand: _G1995?=g(_G1999)
+system: [_G1996?=h(a),h(_G1992,_G1993)?=h(e,r),_G1999?=f(_G1996),f(g)?=f(a,b)]
+expand: _G1996?=h(a)
+system: [h(_G1992,_G1993)?=h(e,r),_G1999?=f(h(a)),f(g)?=f(a,b)]
+decompose: h(_G1992,_G1993)?=h(e,r)
+system: [_G1992?=e,_G1993?=r,_G1999?=f(h(a)),f(g)?=f(a,b)]
+simplify: _G1992?=e
+system: [_G1993?=r,_G1999?=f(h(a)),f(g)?=f(a,b)]
+simplify: _G1993?=r
+system: [_G1999?=f(h(a)),f(g)?=f(a,b)]
+expand: _G1999?=f(h(a))
+system: [f(g)?=f(a,b)]
+clash: f(g)?=f(a,b)
+No
 
 \end{lstlisting}
 
-\begin{lstlisting}[caption ={Exemple d'execution avec le choix du dernier d'habord}]
-?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], dernier).
-systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r)),_G1530?=f(_G1527)]
-expand: _G1530?=f(_G1527)
-systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(f(_G1527)),h(a),h(e,r))]
-decompose: f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(f(_G1527)),h(a),h(e,r))
-systeme: [_G1526?=g(f(_G1527)),_G1527?=h(a),h(_G1523,_G1524)?=h(e,r)]
-decompose: h(_G1523,_G1524)?=h(e,r)
-systeme: [_G1523?=e,_G1524?=r,_G1526?=g(f(_G1527)),_G1527?=h(a)]
-expand: _G1527?=h(a)
-systeme: [_G1523?=e,_G1524?=r,_G1526?=g(f(h(a)))]
-expand: _G1526?=g(f(h(a)))
-systeme: [_G1523?=e,_G1524?=r]
-simplify: _G1524?=r
-systeme: [_G1523?=e]
-simplify: _G1523?=e
-X = g(f(h(a))),
-Y = h(a),
-C = e,
-V = r,
-Z = f(h(a)).
+\begin{lstlisting}[caption ={Exemple d'exécution avec le choix pondéré}]
+4 ?- trace_unif([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y), f(g) ?= f(a, b)], pondere).
+system: [f(_G1995,_G1996,h(_G1992,_G1993))?=f(g(_G1999),h(a),h(e,r)),_G1999?=f(_G1996),f(g)?=f(a,b)]
+clash: f(g)?=f(a,b)
+No
+\end{lstlisting}
+
+\begin{lstlisting}[caption ={Exemple d'exécution avec le choix aléatoire}]
+5 ?- trace_unif([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y), f(g) ?= f(a, b)], aleatoire).
+system: [f(_G2007,_G2008,h(_G2004,_G2005))?=f(g(_G2011),h(a),h(e,r)),_G2011?=f(_G2008),f(g)?=f(a,b)]
+expand: _G2011?=f(_G2008)
+system: [f(_G2007,_G2008,h(_G2004,_G2005))?=f(g(f(_G2008)),h(a),h(e,r)),f(g)?=f(a,b)]
+clash: f(g)?=f(a,b)
+No
 
 \end{lstlisting}
 
-\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
-?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], aleatoire).
-systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r)),_G1530?=f(_G1527)]
-decompose: f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r))
-systeme: [_G1526?=g(_G1530),_G1527?=h(a),h(_G1523,_G1524)?=h(e,r),_G1530?=f(_G1527)]
-decompose: h(_G1523,_G1524)?=h(e,r)
-systeme: [_G1523?=e,_G1524?=r,_G1526?=g(_G1530),_G1527?=h(a),_G1530?=f(_G1527)]
-expand: _G1526?=g(_G1530)
-systeme: [_G1523?=e,_G1524?=r,_G1527?=h(a),_G1530?=f(_G1527)]
-simplify: _G1523?=e
-systeme: [_G1524?=r,_G1527?=h(a),_G1530?=f(_G1527)]
-expand: _G1530?=f(_G1527)
-systeme: [_G1524?=r,_G1527?=h(a)]
-expand: _G1527?=h(a)
-systeme: [_G1524?=r]
-simplify: _G1524?=r
-X = g(f(h(a))),
-Y = h(a),
-C = e,
-V = r,
-Z = f(h(a)).
-\end{lstlisting}
-
-\begin{lstlisting}[caption ={Exemple d'execution avec comme choix le premier}]
-?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], premier).
-systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r)),_G1530?=f(_G1527)]
-decompose: f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r))
-systeme: [_G1526?=g(_G1530),_G1527?=h(a),h(_G1523,_G1524)?=h(e,r),_G1530?=f(_G1527)]
-expand: _G1526?=g(_G1530)
-systeme: [_G1527?=h(a),h(_G1523,_G1524)?=h(e,r),_G1530?=f(_G1527)]
-expand: _G1527?=h(a)
-systeme: [h(_G1523,_G1524)?=h(e,r),_G1530?=f(h(a))]
-decompose: h(_G1523,_G1524)?=h(e,r)
-systeme: [_G1523?=e,_G1524?=r,_G1530?=f(h(a))]
-simplify: _G1523?=e
-systeme: [_G1524?=r,_G1530?=f(h(a))]
-simplify: _G1524?=r
-systeme: [_G1530?=f(h(a))]
-expand: _G1530?=f(h(a))
-X = g(f(h(a))),
-Y = h(a),
-C = e,
-V = r,
-Z = f(h(a)).
-\end{lstlisting}
+On constate donc que sur ce cas particulier, le choix pondéré a bien fonctionné, c'est à dire que l'algorithme a tout de suite repéré que le système était insolvable et a stoppé l'exécution, le choix aléatoire s'en sort bien lui aussi mais ça aurait très bien pu ne pas être le cas, le choix de la première équation est le pire des cas puisqu'on ne tombe sur le problème qu'une fois toutes les autres équations résolues.
 
 \chapter*{Question 3}
 
-Pour passer du fonctionnement de la question 2 à celui de la question 3. C'est-à-dire créer les prédicats $unif(P,S)$ et $trace_unif(P,S)$ permettant respectivement d'exécuter unifie sans et avec les messages dans la console. Il a suffit de remplacer tous les appels aux fonctions "write" et "print" par un appel à la fonction "echo", les nouveaux prédicats font tout deux appels à unifie, mais ils précèdent cet appel par clr\_echo ou set\_echo, servant respectivement à désactiver ou activer le flag echo\_on. Ainsi quand le prédicat unifie appelera "echo" ce dernier affichera ou n'affichera pas le message en fonction de l'état du flag mais continuera son exécution quoi qu'il arrive.
+Pour passer du fonctionnement de la question 2 à celui de la question 3. C'est-à-dire créer les prédicats $unif(P,S)$ et $trace_unif(P,S)$ permettant respectivement d'exécuter unifie sans et avec les messages dans la console. Il a suffit de remplacer tous les appels aux fonctions "write" et "print" par un appel à la fonction "echo", les nouveaux prédicats font tout deux appels à unifie, mais ils précèdent cet appel par clr\_echo ou set\_echo, servant respectivement à désactiver ou activer le flag echo\_on. Ainsi quand le prédicat unifie appellera "echo" ce dernier affichera ou n'affichera pas le message en fonction de l'état du flag mais continuera son exécution quoi qu'il arrive.
 
 \begin{lstlisting}[caption ={Exemple d'execution avec un niveau de debug}]
 ?- trace_unif([a ?= U, f(X, Y) ?= f(g(Z ),h(a )), Z ?= f(Y )], premier).
@@ -287,12 +233,654 @@ Y = h(a ),
 Z = f(h(a )).
 \end{lstlisting}
 
-\begin{lstlisting}[caption ={Exemple d'execution }]
+\begin{lstlisting}[caption ={Exemple d'exécution }]
 unif([a ?= U, f(X, Y) ?= f(g(Z),h(a)), Z ?= f(Y)], premier).
 U = a,
 X = g(f(h(a))),
 Y = h(a),
 Z = f(h(a)).
 \end{lstlisting}
+
+\chapter{Sources}
+Les sources de ce projet sont divisées en 2 fichiers. Le fichier principal est le fichier $projet.pl$, il contient le programme demandé. Le second fichier est le fichier $test.pl$ qui contient les tests unitaires que nous avons créés pour s'assurer que notre programme faisait bien le travail voulu, notamment les prédicats $regle$ et $reduit$. Les tests se lance avec le prédicat $tests.$.
+\section{projet}
+\begin{lstlisting}[caption ={le fichier projet.pl}]
+:- op(20,xfy,?=).
+
+% Prédicats d'affichage fournis
+
+% set_echo: ce prédicat active l'affichage par le prédicat echo
+set_echo :- assert(echo_on).
+
+% clr_echo: ce prédicat inhibe l'affichage par le prédicat echo
+clr_echo :- retractall(echo_on).
+
+% echo(T): si le flag echo_on est positionné, echo(T) affiche le terme T
+%          sinon, echo(T) réussit simplement en ne faisant rien.
+
+echo(T) :- echo_on, !, write(T).
+echo(_). 
+
+select_strat(premier, P, E, R):-
+	choix_premier(P, _, E, R)
+.
+
+select_strat(pondere, P, E, R):-
+	choix_pondere(P, _, E, R)
+.
+
+select_strat(aleatoire, P, E, R):-
+	choix_aleatoire(P, _, E, R)
+.
+select_strat(dernier, P, E, R):-
+	choix_dernier(P, _, E, R)
+.
+
+unifie(P):- unifie(P, premier).
+unifie([], _):- true, !.
+unifie(bottom, _):- false, !.
+unifie(P, Strat):-
+	echo("system: "),echo(P),echo("\n"),
+	select_strat(Strat, P, E, R),
+	echo(R),echo(": "),echo(E),echo("\n"),
+	reduit(R, E, P, Q),
+	unifie(Q, Strat), !
+.
+
+unif(P, S):-
+	clr_echo,
+	unifie(P, S)
+.
+
+trace_unif(P,S):-
+	set_echo,
+	(
+		unifie(P, S), echo("Yes"),!
+	;	
+		echo("No")
+	)
+.
+
+select_rule([], _, _, _):- false, !.%on a parcouru la liste des règle sans en trouver une qui fonctionne
+select_rule( [Next |  MasterList], [], Pbase, P, R, E):-
+	select_rule(MasterList, Next, Pbase, P, R, E)
+.
+select_rule(MasterList, [ _ | ListRules], Pbase, [], R, E):-
+	select_rule(MasterList, ListRules, Pbase, Pbase, R, E)
+.
+select_rule( MasterList,[FirstRule | ListRules], Pbase, [Ep|P], R, E):-
+	(
+		regle(Ep, FirstRule),
+		R = FirstRule,
+		E = Ep,
+		!
+	;
+		select_rule(MasterList, [FirstRule | ListRules], Pbase, P, R, E),!
+	)
+.
+
+liste_pondere([ [clash, check],
+				[rename, simplify],
+				[orient, decompose],
+				[expand]
+			  ]):- 
+	true 
+.
+choix_premier( [E|_], _, E, R):- %TODO
+	regle(E,R),!	
+.
+
+choix_pondere(P, _, E, R):-
+	liste_pondere( [FirstRules | List] ),
+	select_rule(List,FirstRules, P, P, R, E)
+.
+
+choix_aleatoire(P, _, E, R):-
+	random_member(E, P),
+	regle(E, R),
+	!
+.
+choix_dernier(P, _, E, R):-
+	reverse(P, [E|_]),
+	regle(E, R),
+	!
+.
+
+%TODO: en fait il faut enlever E de P dans choix
+
+
+regle(E, decompose):-
+	not(atom(E)),
+	split(E, X, Y),
+	compound(X),
+	compound(Y),
+	compound_name_arity(X, N, A),
+	compound_name_arity(Y, N, A)
+.
+regle(E, simplify):-
+	split(E, L, R),
+	var(L),
+	not(var(R)),
+	not(compound(R))
+.
+regle(E, rename):-
+	split(E, L, R),
+	var(R),
+	var(L)
+.
+regle(E, expand):-
+	split(E, X, Y),
+	var(X),
+	compound(Y),
+	not(occur_check(X, Y))
+.
+regle(E, clash):-
+	split(E, L, R),
+	compound(L),
+	compound(R),
+	compound_name_arity(L, Nl, Al),
+	compound_name_arity(R, Nr, Ar),
+	not( (Nl == Nr, Al == Ar) )
+.
+regle(E, check):-
+	split(E, X, Y),
+	not(X == Y),
+	var(X),
+	occur_check(X, Y)
+.
+regle(E, orient):-
+	split(E, L, R),
+	var(R),
+	not(var(L))
+.
+
+split(E, L, R):-
+	arg(1, E, L),
+	arg(2, E, R)
+.
+
+occur_check(V, T) :-
+	var(V),
+	compound(T),
+	term_variables(T, L),
+	occur_check_list(V, L)
+.
+occur_check_list(_, []):-
+	not(true)
+.
+occur_check_list(V, [C|T]) :-
+	occur_check_list(V, T);
+	V == C
+.
+
+unif_list([], [],[]):- true.
+unif_list([L|List1], [R|List2], [L ?= R| Rp]):-
+	unif_list(List1, List2, Rp)
+.
+reduit(simplify, E, P, Q) :-
+	split(E, X, T),
+	X = T,
+	delete_elem(E, P, Q)
+.
+reduit(rename, E, P, Q):-
+	split(E, X, T),
+	X = T,
+	delete_elem(E, P, Q)
+.
+reduit(expand, E, P, Q) :-
+	split(E, X, T),
+	X = T,
+	delete_elem(E, P, Q)
+.
+reduit(check, _, _, bottom):- false . 
+
+reduit(orient, E, P, [ R ?= L | Tp ]) :-
+	split(E, L, R),
+	delete_elem(E, P, Tp)
+.
+reduit(decompose, E, P, S):-
+	split(E, L, R),
+	L =.. [_|ArgsL],
+	R =.. [_|ArgsR],
+	unif_list(ArgsL, ArgsR, Res),
+	delete_elem(E, P, Pp),
+	union(Res, Pp, S)
+.
+reduit(clash, _, _, bottom):- false .
+
+delete_elem(_, [], []) :- !.
+delete_elem(Elem, [Elem|Set], Set):- ! .
+delete_elem(Elem, [E|Set], [E|R]):-
+	delete_elem(Elem, Set, R)
+.
+\end{lstlisting}
+\section{tests}
+\begin{lstlisting}[caption ={le fichier test.pl}]
+:-
+	op(20, xfy,[?=]),
+	[projet]
+.
+
+writeOK() :- write(" : ok"), nl.
+
+tests() :-
+	writeln("Debut des tests : "), nl,
+	writeln("==== Test : Reduit ===="), nl,
+	test_reduit_decompose,
+	test_reduit_rename,
+	test_reduit_simplify,
+	test_reduit_expand,
+	test_reduit_orient,
+	test_reduit_clash,
+	test_reduit_check,
+	writeln("Reduit : checked"),
+
+	nl, writeln("==== Test : Regle ===="), nl,
+	test_regle_simplify,
+	test_regle_rename,
+	test_regle_expand,
+	test_regle_orient,
+	test_regle_decompose,
+	test_regle_clash,
+	test_regle_check,
+	writeln("Regle : checked"),
+	/*
+	On a supprimé car le fonctionnnement de unifie a changé au cours du TP, et ce n'est pas nécessaire que ce soit testé car les fonctions qui constituent unifie sont testées
+	nl,writeln("====== Test: Unifie ===="),nl,
+	test_unifie(),
+	*/
+	write("Tous les tests sont passé avec succes")
+.
+
+test_unifie():-
+	unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(Y)]),
+	write("exemple prof juste: ok"),nl,nl,
+	not(unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(X)])),
+	write("exemple prof faux: ok"),nl,nl,
+	not(unifie([a?=b])),
+	not(unifie([a ?= X, X ?= b]))
+.
+
+test_reduit_decompose():-
+	writeln("==== Reduit : Decompose ===="),
+
+	write("f(a) ?= f(b), [a ?= b]"),
+	reduit(decompose, f(a) ?= f(b), [f(a)?=f(b)], [a?=b]),
+	writeOK,
+	
+	write("f(a) ?= f(a), [a ?= a]"), 
+	reduit(decompose, f(a) ?= f(a), [], [a?=a]),
+	writeOK,
+
+	write("f(a,b,c) ?= f(d, e, f), [a ?= d, b ?= e, c ?= f]"), 
+	reduit(decompose, f(a, b, c) ?= f(d, e, f), [], [a?=d, b ?= e, c ?= f ]),
+	writeOK,
+
+
+	write("f(X) ?= f(a), [X ?= a]"), 
+	reduit(decompose, f(X) ?= f(a), [], [X?=a]),
+	writeOK,
+
+
+	write("f(a, X , b, Y) ?= f(d, e, f, g), [a ?= d, X ?= e, b ?= f, Y?= g]"), 
+	reduit(decompose, f(a, X, b, Y) ?= f(d, e, f, g), [], [a?=d, X ?= e, b ?= f, Y ?= g]),
+	writeOK,
+
+
+write("f(g(X), W) ?= f(A, Q), [g(X) ?= A, W ?= Q]"),
+	reduit(decompose, f(g(X), W) ?= f(A, Q), [f(g(X), W) ?= f(A, Q)], [g(X)?=A,W?=Q]),
+	writeOK
+.
+
+test_reduit_rename() :-
+	writeln("==== Reduit : Rename ===="),
+	write("X?=Y, []"),
+	reduit(rename, X2?=Y2, [X2?=Y2], []),
+	X2 == Y2,
+	writeOK,
+
+	write("X?=Y,[X ?= a] => [Y ?= a]"),
+	reduit(rename, X1?=Y1, [X1?=Y1, X1 ?= a], [Y1 ?= a]),
+	X1 == Y1,
+	writeOK
+
+.
+
+test_reduit_simplify() :-
+	writeln("==== Reduit : Simplify ===="),
+	
+	write("X?=a , []"),
+	reduit(simplify, X?=a, [X?=a], []),
+	writeOK,
+	write("X?=a,[Y ?= X] => [Y ?= a]"),
+	reduit(simplify, X1?=a, [Y1?=X1, Y1 ?= X1], [Y1 ?= a]),
+	writeOK
+.
+
+test_reduit_expand() :-
+	writeln("==== Reduit : Expand ===="),
+
+	write("X?=f(a), []"),
+	reduit(expand, X2?=f(a), [X2?=f(a)], []),
+	X2 == f(a),
+	writeOK,
+
+	write("X?=f(E), []"),
+	reduit(expand, X3?=f(E2), [X3?=f(E2)], []),
+	X3 == f(E2),
+	writeOK
+.
+
+test_reduit_orient() :-
+	writeln("==== Reduit : Orient ===="),
+
+	write("f(W)?=X, [X?=f(W)]"),
+	reduit(orient, f(W)?=X, [f(W)?=X], [X?=f(W)]),
+	writeOK,
+
+	write("f(a)?=X, [X?=f(a)]"),
+	reduit(orient, f(a)?=X, [f(a)?=X], [X?=f(a)]),
+	writeOK
+.
+
+test_reduit_clash() :-
+	writeln("==== Reduit : clash ===="),
+	
+	write("clash"),
+	not(reduit(clash, _, _, bottom)),
+	writeOK
+.
+
+test_reduit_check() :-
+	writeln("==== Reduit : check ===="),
+
+	write("check"),
+	not(reduit(check, _, _, bottom)),
+	writeOK
+.
+
+test_regle_simplify() :- 
+	writeln("==== Regle : simplify ===="),
+
+	write("X ?= a"),
+	regle(X?=a, simplify),
+	writeOK,
+
+	write("X ?= 1"),
+	regle(X44 ?= 1, simplify),
+	writeOK,
+
+
+	write("a ?= b"),
+	not(regle(a ?= b, simplify)),
+	writeOK,
+
+	write("X ?= f(a)"),
+	not(regle(X1 ?= f(a), simplify)),
+	writeOK,
+
+	write("X ?= Y"),
+	not(regle(X2 ?= Y, simplify)),
+	writeOK,
+
+
+	write("X ?= f(Y)"),
+	not(regle(X3 ?= f(Y), simplify)),
+	writeOK,
+
+	write("f(a) ?= W"),
+	not(regle(f(a) ?= W1, simplify)),
+	writeOK,
+
+	write("f(a) ?= f(W)"),
+	not(regle(f(a) ?= f(W2), simplify)),
+	writeOK
+.
+
+test_regle_rename() :-
+	writeln("==== Regle : rename ===="),
+
+	write("X ?= a"),
+	not(regle(X1?=a, rename)),
+	writeOK,
+
+	write("X ?= f(a)"),
+	not(regle(X2 ?= f(a), rename)),
+	writeOK,
+
+	write("X ?= Q"),
+	regle(X3?=Q1, rename),
+	writeOK,
+
+	write("a ?= W"),
+	not(regle(a ?= W1, rename)),
+	writeOK,
+
+	write("a ?= b"),
+	not(regle(a ?= b, rename)),
+	writeOK,
+
+	write("a ?= f(b)"),
+	not(regle( a ?= f(b), rename)),
+	writeOK,
+
+
+	write("f(a) ?= W"),
+	not(regle(f(a) ?= W2, rename)),
+	writeOK,
+
+	write("f(a) ?= f(W)"),
+	not(regle(f(a) ?= f(W3), rename)),
+	writeOK
+.
+
+test_regle_expand() :-
+	writeln("==== Regle : expand ===="),
+
+	write("X ?= a"),
+	not(regle(X1 ?= a, expand)),
+	writeOK,
+
+	write("X ?= f(a)"),
+	regle(X2 ?= f(a), expand),
+	writeOK,
+
+	write("X ?= f(Q)"),
+	regle(X3 ?= f(Q1), expand),
+	writeOK,
+
+
+	write("X ?= f(X)"),
+	not(regle(X10 ?= f(X10), expand)),
+	writeOK,
+
+
+	write("X ?= f(a, b, X)"),
+	not(regle(X12 ?= f(a, b, X12), expand)),
+	writeOK,
+
+	write("X ?= f(a, b, c, g(X))"),
+	not(regle(X11 ?= f(a, b, c,g(X11) ), expand)),
+	writeOK,
+
+	write("X ?= Q"),
+	not(regle( X4 ?=Q2, expand)),
+	writeOK,
+
+	write("f(a) ?= W"),
+	not(regle(f(a) ?= W1, expand)),
+	writeOK,
+
+	write("f(a) ?= f(W)"),
+	not(regle(f(a) ?= f(W2), rename)),
+	writeOK
+.
+
+test_regle_orient() :-
+	writeln("==== Regle : orient ===="),
+
+	write("X ?= a"),
+	not(regle(X1?=a, orient)),
+	writeOK,
+
+	write("X ?= f(a)"),
+	not(regle(X2 ?= f(a), orient)),
+	writeOK,
+
+	write("X ?= Q"),
+	not(regle(X3 ?=Q, orient)),
+	writeOK,
+
+	write("a ?= W"),
+	regle(a ?= W1, orient),
+	writeOK,
+
+	write("f(a) ?= W"),
+	regle(f(a) ?= W2, orient),
+	writeOK,
+
+	write("f(X) ?= W"),
+	regle(f(X) ?= W4, orient),
+	writeOK,
+
+	write("f(a) ?= f(W)"),
+	not(regle(f(a) ?= f(W3), orient)),
+	writeOK
+.
+
+
+test_regle_decompose() :-
+	writeln("==== Regle : decompose ===="),
+
+	write("X ?= a"),
+	not(regle( X ?= a, decompose)),
+	writeOK,
+
+	write("X ?= f(a)"),
+	not(regle(X ?= f(a), decompose)),
+	writeOK,
+
+	write("X ?= Q"),
+	not(regle(X?=Q, decompose)),
+	writeOK,
+
+	write("f(X) ?= W"),
+	not(regle(f(X) ?= W, decompose)),
+	writeOK,
+
+	write("f(a) ?= g(a)"),
+	not(regle(f(a) ?= g(a), decompose)),
+	writeOK,
+
+	write("f(a) ?= f(a,b)"),
+	not(regle(f(a) ?= f(a, b), decompose)),
+	writeOK,
+	
+	write("f(a,b) ?= f(a)"),
+	not(regle(f(a,b) ?= f(a), decompose)),
+	writeOK,
+	
+	write("f(a,g()) ?= f(b, c())"),
+	regle(f(a, g()) ?= f(b, c()), decompose),
+	writeOK,
+
+	
+	write("f(a, X) ?= f(a, b)"),
+	regle(f(a, X) ?= f(a,b), decompose),
+	writeOK,
+
+	write("f(a) ?= f(W)"),
+	regle(f(a) ?= f(W), decompose),
+	writeOK,
+
+	write("f(a, E, q) ?= f(W, c, e)"),
+	regle(f(a) ?= f(W), decompose),
+	writeOK
+.
+
+test_regle_clash() :-
+	writeln("==== Regle : clash ===="),
+
+	write("X ?= a"),
+	not(regle(X?=a, clash)),
+	writeOK,
+
+	write("X ?= f(a)"),
+	not(regle(X ?= f(a), clash)),
+	writeOK,
+
+	write("X ?= Q"),
+	not(regle(X?=Q, clash)),
+	writeOK,
+
+	write("f(X) ?= W"),
+	not(regle(f(X) ?= W, clash)),
+	writeOK,
+
+	write("f(a) ?= f(W)"),
+	not(regle(f(a) ?= f(W), clash)),
+	writeOK,
+
+	write("f(Q, E) ?= g(E, V)"),
+	regle(f(Q, E) ?= g(E, V), clash),
+	writeOK,
+
+	write("f(Q) ?= f(E, V)"),
+	regle(f(Q, E) ?= g(E, V), clash),
+	writeOK,
+
+	write("f(x, y) ?= g(x, y)"),
+	regle(f(x, y) ?= g(x, y), clash),
+	writeOK,
+
+	write("f(Q, E) ?= g(E, V, e)"),
+	regle(f(Q, E) ?= g(E, V), clash),
+	writeOK
+.
+
+test_regle_check() :-
+	writeln("==== Regle : check ===="),
+
+	write("X ?= a"),
+	not(regle(X?=a, check)),
+	writeOK,
+
+	write("X ?= f(a)"),
+	not(regle(X ?= f(a), check)),
+	writeOK,
+
+	write("X ?= Q"),
+	not(regle(X?=Q, check)),
+	writeOK,
+
+	write("f(X) ?= W"),
+	not(regle(f(X) ?= W, check)),
+	writeOK,
+
+	write("f(a) ?= f(W)"),
+	not(regle(f(a) ?= f(W), check)),
+	writeOK,
+
+	write("f(Q, E) ?= g(E, V)"),
+	not(regle(f(Q, E) ?= g(E, V), check)),
+	writeOK,
+
+	write("X ?= f(g(X))"),
+	regle(X ?= f(g(X)), check),
+	writeOK,
+
+	write("X ?= f(X)"),
+	regle(X ?= f(X), check),
+	writeOK,
+
+
+	write("X ?= f(a,X)"),
+	regle(X ?= f(a,X), check),
+	writeOK
+.
+
+
+\end{lstlisting}
+
 
 \end{document}
