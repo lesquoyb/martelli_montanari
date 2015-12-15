@@ -264,40 +264,33 @@ Z = f(h(a)).
 
 \chapter*{Question 3}
 
-\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
-?- trace_unif([X ?= e, u ?= I, f(a ) ?= g(Y )], aleatoire).
-system: [_G191?=e,u?=_G198,f(a)?=g(_G205)]
-simplify: _G191?=e
-system: [u?=_G198,f(a)?=g(_G205)]
-orient: u?=_G198
-system: [_G198?=u,f(a)?=g(_G205)]
-simplify: _G198?=u
-system: [f(a)?=g(_G205)]
-clash: f(a)?=g(_G205)
-No
-true.
+\begin{lstlisting}[caption ={Exemple d'execution avec un niveau de debug}]
+?- trace_unif([a ?= U, f(X, Y) ?= f(g(Z ),h(a )), Z ?= f(Y )], premier).
+system: [a?=_G192,f(_G197,_G198)?=f(g(_G200),h(a )),_G200?=f(_G198)]
+orient: a?=_G192
+system: [_G192?=a,f(_G197,_G198)?=f(g(_G200),h(a )),_G200?=f(_G198)]
+simplify: _G192?=a
+system: [f(_G197,_G198)?=f(g(_G200),h(a )),_G200?=f(_G198)]
+decompose: f(_G197,_G198)?=f(g(_G200),h(a ))
+system: [_G197?=g(_G200),_G198?=h(a),_G200?=f(_G198)]
+expand: _G197?=g(_G200)
+system: [_G198?=h(a ),_G200?=f(_G198)]
+expand: _G198?=h(a )
+system: [_G200?=f(h(a ))]
+expand: _G200?=f(h(a ))
+Yes
+U = a,
+X = g(f(h(a ))),
+Y = h(a ),
+Z = f(h(a )).
 \end{lstlisting}
 
-\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
-?- trace_unif([X ?= e, u ?= I, f(a ) ?= g(Y )], premier).
-system: [_G191?=e,u?=_G198,f(a)?=g(_G205)]
-simplify: _G191?=e
-system: [u?=_G198,f(a)?=g(_G205)]
-orient: u?=_G198
-system: [_G198?=u,f(a)?=g(_G205)]
-simplify: _G198?=u
-system: [f(a)?=g(_G205)]
-clash: f(a)?=g(_G205)
-No
-true.
-\end{lstlisting}
-
-\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
-?- trace_unif([X ?= e, u ?= I, f(a ) ?= g(Y )], pondere).
-system: [_G191?=e,u?=_G198,f(a)?=g(_G205)]
-clash: f(a)?=g(_G205)
-No
-true.
+\begin{lstlisting}[caption ={Exemple d'execution }]
+unif([a ?= U, f(X, Y) ?= f(g(Z),h(a)), Z ?= f(Y)], premier).
+U = a,
+X = g(f(h(a))),
+Y = h(a),
+Z = f(h(a)).
 \end{lstlisting}
 
 \end{document}
