@@ -264,6 +264,8 @@ Z = f(h(a)).
 
 \chapter*{Question 3}
 
+Pour passer du fonctionnement de la question 2 à celui de la question 3. C'est-à-dire créer les prédicats $unif(P,S)$ et $trace_unif(P,S)$ permettant respectivement d'exécuter unifie sans et avec les messages dans la console. Il a suffit de remplacer tous les appels aux fonctions "write" et "print" par un appel à la fonction "echo", les nouveaux prédicats font tout deux appels à unifie, mais ils précèdent cet appel par clr\_echo ou set\_echo, servant respectivement à désactiver ou activer le flag echo\_on. Ainsi quand le prédicat unifie appelera "echo" ce dernier affichera ou n'affichera pas le message en fonction de l'état du flag mais continuera son exécution quoi qu'il arrive.
+
 \begin{lstlisting}[caption ={Exemple d'execution avec un niveau de debug}]
 ?- trace_unif([a ?= U, f(X, Y) ?= f(g(Z ),h(a )), Z ?= f(Y )], premier).
 system: [a?=_G192,f(_G197,_G198)?=f(g(_G200),h(a )),_G200?=f(_G198)]
