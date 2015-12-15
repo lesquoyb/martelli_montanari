@@ -11,13 +11,46 @@ unifie(P) :-
 unifie([], R):-true, !.
 unifie(P, pondere) :-
 	write("==== unifie ===="), nl,
-	choix_pondere(P,Q,E,R),
+	choix_pondere(P,_,E, R),
+	write("règle: "),print(R),nl,
 	reduit(R, E, P, Q),
-	unifie(Q, S)
+	write("Q:"),print(Q),nl,
+	unifie(Q, pondere)
 .
 
 
-choix_pondere(P, Q, E, R):-
-true	
+select_rule([], _, _, _):- false, !.%on a parcouru la liste des règle sans en trouver une qui fonctionne
+select_rule( [Next |  MasterList], [], E, R):-
+	select_rule(MasterList, Next, E, R)
 .
-%TODO: proposer d'autres strats
+select_rule( MasterList,[FirstRule | ListRules], E, R):-
+	(
+		regle(E, FirstRule),
+		R = FirstRule,!
+	;
+		print(FirstRule),write(" a été éliminé"),nl,
+		select_rule(MasterList, ListRules, E, R),!
+	)
+.
+
+
+liste_pondere([ [clash, check],
+				[rename, simplify],
+				[orient, decompose],
+				[expand]
+			  ]):- 
+	true 
+.
+
+
+
+
+
+choix_pondere([E|P], _, E, R):-
+	liste_pondere( [FirstRules | List] ),
+	select_rule(List,FirstRules, E, R)
+.
+%TODO: proposer d'autres strats(random ?)
+%TODO: en fait il faut enlever E de P dans choix
+
+
