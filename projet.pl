@@ -15,51 +15,36 @@ choix_premier( [E|_], _, E, R):- %TODO
 	regle(E,R),!	
 .
 
-choix_pondere(P, _, E, R):-
-	liste_pondere( [FirstRules | List] ),
-	select_rule(List,FirstRules, P, P, R, E),
-	!
-.
-choix_aleatoire(P, _, E, R):-
-	random_member(E, P),
-	regle(E, R),
-	!
-.
-choix_dernier(P, _, E, R):-
-	reverse(P, [E|_]),
-	regle(E, R),
-	!
-.
 unifie([]):- true, !.
 unifie(bottom):- false, !.
 unifie(P) :-
 	write("systeme: "),print(P),nl,
 	choix_premier(P, _, E, R),
-	write("choix: "),print(E),write(" règle: "),print(R),nl,
-	reduit(R, E, P, Q),
-	unifie(Q)
+	apply_strat(P, E, R, premier)
 .
 
-unifie([], _):-true, !.
-unifie(P, premier):- unifie(P).
-unifie(P, pondere) :-
+unifie([], _):- true, !.
+unifie(P, premier):- unifie(P),! .
+unifie(P, pondere):- 
 	choix_pondere(P,_,E, R),
-	write("choix: "),print(E),write(" règle: "),print(R),nl,
-	reduit(R, E, P, Q),
-	unifie(Q, pondere)
+	apply_strat(P, E, R, pondere),!
 .
+
 unifie(P, aleatoire):-
 	choix_aleatoire(P, _, E, R),
-	write("choix: "),print(E),write(" règle: "),print(R),nl,
-	reduit(R, E, P, Q),
-	unifie(Q, aleatoire)
+	apply_strat(P, E, R, aleatoire),!
 .
+
 unifie(P, dernier):-
 	choix_dernier(P, _, E, R),
+	apply_strat(P, E, R, dernier),!
+.	
+
+apply_strat(P, E, R, Strat):-
 	write("choix: "),print(E),write(" règle: "),print(R),nl,
 	reduit(R, E, P, Q),
-	unifie(Q, dernier)
-.	
+	unifie(Q, Strat)
+.
 
 %TODO: question 3
 select_rule([], _, _, _):- false, !.%on a parcouru la liste des règle sans en trouver une qui fonctionne
@@ -75,9 +60,10 @@ select_rule( MasterList,[FirstRule | ListRules], Pbase, [Ep|P], R, E):-
 		write("test: "),print(Ep),write(" avec "),print(FirstRule),nl,
 		regle(Ep, FirstRule),
 		R = FirstRule,
-		E = Ep
+		E = Ep,
+		!
 	;
-		select_rule(MasterList, [FirstRule | ListRules], Pbase, P, R, E)
+		select_rule(MasterList, [FirstRule | ListRules], Pbase, P, R, E),!
 	)
 .
 
@@ -89,6 +75,21 @@ liste_pondere([ [clash, check],
 	true 
 .
 
+choix_pondere(P, _, E, R):-
+	liste_pondere( [FirstRules | List] ),
+	select_rule(List,FirstRules, P, P, R, E)
+.
+
+choix_aleatoire(P, _, E, R):-
+	random_member(E, P),
+	regle(E, R),
+	!
+.
+choix_dernier(P, _, E, R):-
+	reverse(P, [E|_]),
+	regle(E, R),
+	!
+.
 %TODO: proposer d'autres strats(random ?)
 %TODO: en fait il faut enlever E de P dans choix
 
