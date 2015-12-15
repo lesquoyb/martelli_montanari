@@ -25,6 +25,53 @@ unifie(P) :-
 	unifie(Q)
 .
 
+unifie([], R):-true, !.
+unifie(P, premier):- unifie(P).
+unifie(P, pondere) :-
+	write("==== unifie ===="), nl,
+	choix_pondere(P,_,E, R),
+	write("règle: "),print(R),nl,
+	write("E: "), print(E),nl,
+	reduit(R, E, P, Q),
+	write("Q:"),print(Q),nl,
+	unifie(Q, pondere)
+.
+%TODO: question 3
+select_rule([], _, _, _):- false, !.%on a parcouru la liste des règle sans en trouver une qui fonctionne
+select_rule( [Next |  MasterList], [], Pbase, P, R, E):-
+	select_rule(MasterList, Next, Pbase, P, R, E)
+.
+select_rule(MasterList, [FirstRule | ListRules], Pbase, [], R, E):-
+	select_rule(MasterList, ListRules, Pbase, Pbase, R, E)
+.
+select_rule( MasterList,[FirstRule | ListRules], Pbase, [Ep|P], R, E):-
+	(
+		
+		write("test: "),print(Ep),write(" avec "),print(FirstRule),nl,
+		regle(Ep, FirstRule),
+		R = FirstRule,
+		E = Ep,	
+		!
+	;
+		select_rule(MasterList, [FirstRule | ListRules], Pbase, P, R, E),!
+	)
+.
+
+liste_pondere([ [clash, check],
+				[rename, simplify],
+				[orient, decompose],
+				[expand]
+			  ]):- 
+	true 
+.
+
+choix_pondere(P, _, E, R):-
+	liste_pondere( [FirstRules | List] ),
+	select_rule(List,FirstRules, P, P, R, E)
+.
+%TODO: proposer d'autres strats(random ?)
+%TODO: en fait il faut enlever E de P dans choix
+
 
 regle(E, decompose):-
 	not(atom(E)),
@@ -34,30 +81,23 @@ regle(E, decompose):-
 	compound_name_arity(X, N, A),
 	compound_name_arity(Y, N, A)
 .
-
-	
-
 regle(E, simplify):-
 	split(E, L, R),
-	not(var(R)),
 	var(L),
-	not(compound(R))%TODO: vérifier que ça colle bien à la définission
+	not(var(R)),
+	not(compound(R))
 .
-
-
 regle(E, rename):-
 	split(E, L, R),
 	var(R),
 	var(L)
 .
-
 regle(E, expand):-
 	split(E, X, Y),
 	var(X),
 	compound(Y),
 	not(occur_check(X, Y))
 .
-
 regle(E, clash):-
 	split(E, L, R),
 	compound(L),
@@ -66,14 +106,12 @@ regle(E, clash):-
 	compound_name_arity(R, Nr, Ar),
 	not( (Nl == Nr, Al == Ar) )
 .
-
 regle(E, check):-
 	split(E, X, Y),
 	not(X == Y),
 	var(X),
 	occur_check(X, Y)
 .
-
 regle(E, orient):-
 	split(E, L, R),
 	var(R),
@@ -103,7 +141,6 @@ unif_list([], [],[]):- true.
 unif_list([L|List1], [R|List2], [L ?= R| Rp]):-
 	unif_list(List1, List2, Rp)
 .
-
 reduit(simplify, E, P, Q) :-
 	split(E, X, T),
 	X = T,
@@ -114,14 +151,13 @@ reduit(rename, E, P, Q):-
 	X = T,
 	delete_elem(E, P, Q)
 .
-
 reduit(expand, E, P, Q) :-
 	split(E, X, T),
 	X = T,
 	delete_elem(E, P, Q)
 .
+reduit(check, _, _, bottom):- false . 
 
-reduit(check, _, _, bottom):- false . %TODO: surement de la merde
 reduit(orient, E, P, [ R ?= L | Tp ]) :-
 	split(E, L, R),
 	delete_elem(E, P, Tp)
@@ -134,47 +170,11 @@ reduit(decompose, E, P, S):-
 	delete_elem(E, P, Pp),
 	union(Res, Pp, S)
 .
-reduit(clash, _, _, bottom):- false . %TODO: surement n'imp'
+reduit(clash, _, _, bottom):- false .
 
-
-
-delete_elem(_, [], []) :- !.%Achtung 
-delete_elem(Elem, [Elem|Set], Set):- ! .%Achtung
+delete_elem(_, [], []) :- !.
+delete_elem(Elem, [Elem|Set], Set):- ! .
 delete_elem(Elem, [E|Set], [E|R]):-
 	delete_elem(Elem, Set, R)
 .
-
-apply_rules(_, [], P, P):- true.
-apply_rules(E, [FirstRule | ListRules], P, Q):-
-
-	write('=='),
-	print(FirstRule),
-	write(' '),
-	print(E),
-	nl,
-	(
-		regle(E, FirstRule) ->
-			print(FirstRule),write(", est appliqué sur: "), print(E),nl,
-			reduit(FirstRule, E, P, Qtmp),
-			write("une fois appliqué: "),print(Qtmp),nl,
-			apply_rules(E, ListRules, Qtmp, Q)
-	;
-		apply_rules(E, ListRules, P, Q),
-		print(FirstRule),write(", ne peut être appliqué sur: "), print(E),nl
-	)
-.
-
-
-init_rules_list([rename, simplify, expand, check, orient, decompose, clash]):- true .
-
-
-reduce(E, P, Q):-
-    not(atom(E)),
-	functor(E, ?=, _),
-	init_rules_list(ListRules),
-	apply_rules(E, ListRules, P, Q)
-.
-
-
-
 
