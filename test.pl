@@ -7,15 +7,15 @@ writeOK() :- write(" : ok"), nl.
 
 tests() :-
 	writeln("Debut des tests : "), nl,
-	writeln("==== Test : Apply ===="), nl,
-	test_apply_decompose,
-	test_apply_rename,
-	test_apply_simplify,
-	test_apply_expand,
-	test_apply_orient,
-	test_apply_clash,
-	test_apply_check,
-	writeln("Apply : checked"),
+	writeln("==== Test : Reduit ===="), nl,
+	test_reduit_decompose,
+	test_reduit_rename,
+	test_reduit_simplify,
+	test_reduit_expand,
+	test_reduit_orient,
+	test_reduit_clash,
+	test_reduit_check,
+	writeln("Reduit : checked"),
 
 	nl, writeln("==== Test : Regle ===="), nl,
 	test_regle_simplify,
@@ -34,108 +34,108 @@ tests() :-
 .
 
 test_unifie():-
-	unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(X)]),
+	unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(Y)]),
 	unifie([a?=a]),
 	not(unifie([a?=b])),
 	not(unifie([a ?= X, X ?= b]))
 	%TODO
 .
 
-test_apply_decompose():-
-	writeln("==== Apply : Decompose ===="),
+test_reduit_decompose():-
+	writeln("==== Reduit : Decompose ===="),
 
 	write("f(a) ?= f(b), [a ?= b]"),
-	apply(decompose, f(a) ?= f(b), [f(a)?=f(b)], [a?=b]),
+	reduit(decompose, f(a) ?= f(b), [f(a)?=f(b)], [a?=b]),
 	writeOK,
 	
 	write("f(a) ?= f(a), [a ?= a]"), 
-	apply(decompose, f(a) ?= f(a), [], [a?=a]),
+	reduit(decompose, f(a) ?= f(a), [], [a?=a]),
 	writeOK,
 
 	write("f(a,b,c) ?= f(d, e, f), [a ?= d, b ?= e, c ?= f]"), 
-	apply(decompose, f(a, b, c) ?= f(d, e, f), [], [a?=d, b ?= e, c ?= f ]),
+	reduit(decompose, f(a, b, c) ?= f(d, e, f), [], [a?=d, b ?= e, c ?= f ]),
 	writeOK,
 
 
 	write("f(X) ?= f(a), [X ?= a]"), 
-	apply(decompose, f(X) ?= f(a), [], [X?=a]),
+	reduit(decompose, f(X) ?= f(a), [], [X?=a]),
 	writeOK,
 
 
 	write("f(a, X , b, Y) ?= f(d, e, f, g), [a ?= d, X ?= e, b ?= f, Y?= g]"), 
-	apply(decompose, f(a, X, b, Y) ?= f(d, e, f, g), [], [a?=d, X ?= e, b ?= f, Y ?= g]),
+	reduit(decompose, f(a, X, b, Y) ?= f(d, e, f, g), [], [a?=d, X ?= e, b ?= f, Y ?= g]),
 	writeOK,
 
 
 write("f(g(X), W) ?= f(A, Q), [g(X) ?= A, W ?= Q]"),
-	apply(decompose, f(g(X), W) ?= f(A, Q), [f(g(X), W) ?= f(A, Q)], [g(X)?=A,W?=Q]),
+	reduit(decompose, f(g(X), W) ?= f(A, Q), [f(g(X), W) ?= f(A, Q)], [g(X)?=A,W?=Q]),
 	writeOK
 .
 
-test_apply_rename() :-
-	writeln("==== Apply : Rename ===="),
+test_reduit_rename() :-
+	writeln("==== Reduit : Rename ===="),
 	write("X?=Y, []"),
-	apply(rename, X2?=Y2, [X2?=Y2], []),
+	reduit(rename, X2?=Y2, [X2?=Y2], []),
 	X2 == Y2,
 	writeOK,
 
 	write("X?=Y,[X ?= a] => [Y ?= a]"),
-	apply(rename, X1?=Y1, [X1?=Y1, X1 ?= a], [Y1 ?= a]),
+	reduit(rename, X1?=Y1, [X1?=Y1, X1 ?= a], [Y1 ?= a]),
 	X1 == Y1,
 	writeOK
 
 .
 
-test_apply_simplify() :-
-	writeln("==== Apply : Simplify ===="),
+test_reduit_simplify() :-
+	writeln("==== Reduit : Simplify ===="),
 	
 	write("X?=a , []"),
-	apply(simplify, X?=a, [X?=a], []),
+	reduit(simplify, X?=a, [X?=a], []),
 	writeOK,
 	write("X?=a,[Y ?= X] => [Y ?= a]"),
-	apply(simplify, X1?=a, [Y1?=X1, Y1 ?= X1], [Y1 ?= a]),
+	reduit(simplify, X1?=a, [Y1?=X1, Y1 ?= X1], [Y1 ?= a]),
 	writeOK
 .
 
-test_apply_expand() :-
-	writeln("==== Apply : Expand ===="),
+test_reduit_expand() :-
+	writeln("==== Reduit : Expand ===="),
 
 	write("X?=f(a), []"),
-	apply(expand, X2?=f(a), [X2?=f(a)], []),
+	reduit(expand, X2?=f(a), [X2?=f(a)], []),
 	X2 == f(a),
 	writeOK,
 
 	write("X?=f(E), []"),
-	apply(expand, X3?=f(E2), [X3?=f(E2)], []),
+	reduit(expand, X3?=f(E2), [X3?=f(E2)], []),
 	X3 == f(E2),
 	writeOK
 .
 
-test_apply_orient() :-
-	writeln("==== Apply : Orient ===="),
+test_reduit_orient() :-
+	writeln("==== Reduit : Orient ===="),
 
 	write("f(W)?=X, [X?=f(W)]"),
-	apply(orient, f(W)?=X, [f(W)?=X], [X?=f(W)]),
+	reduit(orient, f(W)?=X, [f(W)?=X], [X?=f(W)]),
 	writeOK,
 
 	write("f(a)?=X, [X?=f(a)]"),
-	apply(orient, f(a)?=X, [f(a)?=X], [X?=f(a)]),
+	reduit(orient, f(a)?=X, [f(a)?=X], [X?=f(a)]),
 	writeOK
 .
 
-test_apply_clash() :-
-	writeln("==== Apply : clash ===="),
+test_reduit_clash() :-
+	writeln("==== Reduit : clash ===="),
 	
 	write("clash"),
-	not(apply(clash, _, _, bottom)),
+	not(reduit(clash, _, _, bottom)),
 	writeOK
 .
 
-test_apply_check() :-
-	writeln("==== Apply : check ===="),
+test_reduit_check() :-
+	writeln("==== Reduit : check ===="),
 
 	write("check"),
-	not(apply(check, _, _, bottom)),
+	not(reduit(check, _, _, bottom)),
 	writeOK
 .
 

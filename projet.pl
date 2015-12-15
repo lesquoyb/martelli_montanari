@@ -15,10 +15,10 @@ print(Term) :-
 unifie([]):- true.
 unifie(bottom):- false.
 unifie([E|P]) :-
-	write("passage dans unifie, E: "),print(E),nl,
+	write("systeme: "),print([E|P]),nl,
 	regle(E, R),
-	write("on applique la règle: "),print(R),nl,
-	apply(R, E, P, Q),
+	write(R),write(": "),print(E),nl,
+	reduit(R, E, P, Q),
 	unifie(Q)
 .
 
@@ -100,29 +100,29 @@ unif_list([L|List1], [R|List2], [L ?= R| Rp]):-
 	unif_list(List1, List2, Rp)
 .
 
-apply(simplify, E, P, Q) :-
+reduit(simplify, E, P, Q) :-
 	split(E, X, T),
 	X = T,
 	delete_elem(E, P, Q)
 .
-apply(rename, E, P, Q):-
-	split(E, X, T),
-	X = T,
-	delete_elem(E, P, Q)
-.
-
-apply(expand, E, P, Q) :-
+reduit(rename, E, P, Q):-
 	split(E, X, T),
 	X = T,
 	delete_elem(E, P, Q)
 .
 
-apply(check, _, _, bottom):- false . %TODO: surement de la merde
-apply(orient, E, P, [ R ?= L | Tp ]) :-
+reduit(expand, E, P, Q) :-
+	split(E, X, T),
+	X = T,
+	delete_elem(E, P, Q)
+.
+
+reduit(check, _, _, bottom):- false . %TODO: surement de la merde
+reduit(orient, E, P, [ R ?= L | Tp ]) :-
 	split(E, L, R),
 	delete_elem(E, P, Tp)
 .
-apply(decompose, E, P, S):-
+reduit(decompose, E, P, S):-
 	split(E, L, R),
 	L =.. [_|ArgsL],
 	R =.. [_|ArgsR],
@@ -130,7 +130,7 @@ apply(decompose, E, P, S):-
 	delete_elem(E, P, Pp),
 	union(Res, Pp, S)
 .
-apply(clash, _, _, bottom):- false . %TODO: surement n'imp'
+reduit(clash, _, _, bottom):- false . %TODO: surement n'imp'
 
 
 
@@ -151,7 +151,7 @@ apply_rules(E, [FirstRule | ListRules], P, Q):-
 	(
 		regle(E, FirstRule) ->
 			print(FirstRule),write(", est appliqué sur: "), print(E),nl,
-			apply(FirstRule, E, P, Qtmp),
+			reduit(FirstRule, E, P, Qtmp),
 			write("une fois appliqué: "),print(Qtmp),nl,
 			apply_rules(E, ListRules, Qtmp, Q)
 	;
