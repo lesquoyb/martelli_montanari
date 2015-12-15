@@ -1,0 +1,303 @@
+\documentclass[10pt,a4paper]{report}
+
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\usepackage{setspace}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+
+%%configuration de listings
+\lstset{
+language=Prolog,
+basicstyle=\ttfamily\small, %
+identifierstyle=\color{red}, %
+keywordstyle=\color{blue}, %
+numberstyle=\color{green},
+stringstyle=\color{black!60}, %
+commentstyle=\it\color{green}, %
+columns=flexible, %
+tabsize=2, %
+extendedchars=true, %
+showspaces=false, %
+showstringspaces=false, %
+numbers=left, %
+numberstyle=\tiny, %
+breaklines=true, %
+breakautoindent=true, %
+captionpos=b,
+backgroundcolor=\color{Zgris},
+captionpos = b 
+}
+
+\definecolor{Zgris}{rgb}{0.87,0.85,0.85}
+\newcommand{\HRule}{\rule{\linewidth}{1mm}}
+\newsavebox{\BBbox}
+\newenvironment{DDbox}[1]{
+\begin{lrbox}{\BBbox}\begin{minipage}{\linewidth}}
+{\end{minipage}\end{lrbox}\noindent\colorbox{Zgris}{\usebox{\BBbox}} \\
+[.5cm]}
+
+% Redefine the plain page style
+
+%\headsep = 25pt
+
+\fancypagestyle{plain}{%
+  \fancyhf{}
+%header
+  \fancyhead[L]{Rapport de projet}
+  \fancyhead[R]{\ifnum\value{part}>0 \partname\ \thepart \fi}
+  \renewcommand{\headrulewidth}{0.4pt}% Line at the header visible
+%footer
+  \fancyfoot[L]{Baptiste Lesquoy et Nicolas Weissenbach}
+  \fancyfoot[C]{\thepage}
+  \fancyfoot[R]{\today}%
+  \renewcommand{\footrulewidth}{0.4pt}% Line at the footer visible
+}
+
+
+ \geometry{
+ a4paper,
+ total={210mm,297mm},
+ left=20mm,
+ right=20mm,
+ top=20mm,
+ bottom=20mm,
+ }
+
+
+
+
+\begin{document}
+
+%%
+%%	TITLE PAGE
+%%
+  \begin{titlepage}
+    \begin{center}
+      % Upper part of the page. The '~' is needed because \\
+      % only works if a paragraph has started.
+      ~\\[4cm]
+      \textsc{\LARGE Universite de Lorraine}\\[1.5cm]
+      \textsc{\Large Faculte de Science et Technologie}\\[0.5cm]
+      \textsc{\Large Master 1 Informatique}\\[0.5cm]
+      % Title
+      \HRule \\[0.4cm]
+      { \huge \bfseries Projet de LMC \\[0.4cm] }
+      \HRule \\[1cm]
+     \textsc{\LARGE Algorithme d'unification \\ ~ \\ Martelli Montanari }\\[1cm]
+      \begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}r@{}}
+	\emph{Auteurs:}\\
+	Baptiste \textsc{Lesquoy} \\
+	Nicolas \textsc{Weissenbach}\\
+      \end{tabular*}
+      \vfill
+      % Bottom of the page
+      {\large \today}
+      %\LaTex
+    \end{center}
+  \end{titlepage}
+
+\chapter*{Question 1}
+
+\section*{Les premiers pas vers l'unification}
+Dans un premier temps, nous avons decider d'écrire tous les prédicats de rêgle (qui permettent de savoir quelle rêgle utiliser) et les prédicats de réduction. Commencer par ces prédicats aura permis d'avoir une base de travaille et d'emprunter un processus de developpement iteratif.
+
+\paragraph{Exemple d'un prédicat $regle$} ~\\
+
+\begin{lstlisting}[caption ={Choix de la regle $simplify$}]
+regle(E, simplify):-
+	split(E, L, R),
+	not(var(R)),
+	var(L),
+	not(compound(R))
+.
+\end{lstlisting}
+Ici nous avons le predicat regle pour l'unification $simplify$, le but de ce predicat est de revoyer vrai si simplify est applicable a une equation $E$. Le predicat est faux si la regle n'est pas applicable. \\
+Toutes les regles on été instanciés pour chacunes des unifications possible.
+
+
+\paragraph{Exemple d'un predicat $reduit$} ~\\
+
+\begin{lstlisting}[caption ={Application de la reduction $expand$}]
+reduit(expand, E, P, Q) :-
+	split(E, X, T),
+	X = T,
+	delete_elem(E, P, Q)
+.
+\end{lstlisting}
+Le prédicat $reduit$ permet de d'appliquer la réduction approprié à l'équation $E$. Ici le prédicat $reduit$ applique la transformation $expand$ à l'equation $E$. 
+
+\section*{Unification}
+A la suite de l'implémentation de ces prédicats, nous avons mis en place le système de prédicat qui permet résoudre l'unificateur le plus général. Pour cela, nous avons implémenter le prédicat $unifie$. C'est ce prédicat qui fait le lien entre les prédicats de choix de transformation ($regle$) et ceux d'application de cette transformation.
+
+\begin{lstlisting}[caption ={Prédicat d'unification d'un système d'équation}]
+unifie([E|P]) :-
+write("systeme: "),print([E|P]),nl,
+regle(E, R),
+write(R), write(": "), write(E), nl,
+reduit(R, E, P, Q),
+unifie(Q)
+.
+\end{lstlisting}
+
+
+\chapter*{Question 2}
+La rapidité d'exécution de l'algorithme dépend du choix plus ou moins judicieux des rêgles à exécuter en premier sur le système d'équation. C'est pourquoi il faut mettre en place un système qui prenne en compte le l'ordre dans lequel les rêgles sont exécutés.
+Nous avons donc décidé d'implémenter quatre methode de choix :
+\begin{itemize}
+\item Choix du premier : la premiere rêgle possible est appliqué
+\item Choix pondéré : les rêgles sont évalué dans un ordre près établit qui est plus judicieux que l'ordre normal
+\item Choix aléatoire : les équations sont prise de façon aléatoire, on y applique la rêgle qui est possible
+\item Choix du dernier : la dernière équation possible est appliqué
+\end{itemize}
+
+Grâce à ces quatre possibilités, nous pouvons voir la difference d'execution entre ces differents methodes de choix :
+\begin{lstlisting}[caption ={Exemple d'execution avec le choix pondéré }]
+?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], pondere).
+systeme: [f(_G1769,_G1770,h(_G1766,_G1767))?=f(g(_G1773),h(a),h(e,r)),_G1773?=f(_G1770)]
+decompose: f(_G1769,_G1770,h(_G1766,_G1767))?=f(g(_G1773),h(a),h(e,r))
+systeme: [_G1769?=g(_G1773),_G1770?=h(a),h(_G1766,_G1767)?=h(e,r),_G1773?=f(_G1770)]
+decompose: h(_G1766,_G1767)?=h(e,r)
+systeme: [_G1766?=e,_G1767?=r,_G1769?=g(_G1773),_G1770?=h(a),_G1773?=f(_G1770)]
+simplify: _G1766?=e
+systeme: [_G1767?=r,_G1769?=g(_G1773),_G1770?=h(a),_G1773?=f(_G1770)]
+simplify: _G1767?=r
+systeme: [_G1769?=g(_G1773),_G1770?=h(a),_G1773?=f(_G1770)]
+expand: _G1769?=g(_G1773)
+systeme: [_G1770?=h(a),_G1773?=f(_G1770)]
+expand: _G1770?=h(a)
+systeme: [_G1773?=f(h(a))]
+expand: _G1773?=f(h(a))
+X = g(f(h(a))),
+Y = h(a),
+C = e,
+V = r,
+Z = f(h(a)).
+
+\end{lstlisting}
+
+\begin{lstlisting}[caption ={Exemple d'execution avec le choix du dernier d'habord}]
+?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], dernier).
+systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r)),_G1530?=f(_G1527)]
+expand: _G1530?=f(_G1527)
+systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(f(_G1527)),h(a),h(e,r))]
+decompose: f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(f(_G1527)),h(a),h(e,r))
+systeme: [_G1526?=g(f(_G1527)),_G1527?=h(a),h(_G1523,_G1524)?=h(e,r)]
+decompose: h(_G1523,_G1524)?=h(e,r)
+systeme: [_G1523?=e,_G1524?=r,_G1526?=g(f(_G1527)),_G1527?=h(a)]
+expand: _G1527?=h(a)
+systeme: [_G1523?=e,_G1524?=r,_G1526?=g(f(h(a)))]
+expand: _G1526?=g(f(h(a)))
+systeme: [_G1523?=e,_G1524?=r]
+simplify: _G1524?=r
+systeme: [_G1523?=e]
+simplify: _G1523?=e
+X = g(f(h(a))),
+Y = h(a),
+C = e,
+V = r,
+Z = f(h(a)).
+
+\end{lstlisting}
+
+\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
+?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], aleatoire).
+systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r)),_G1530?=f(_G1527)]
+decompose: f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r))
+systeme: [_G1526?=g(_G1530),_G1527?=h(a),h(_G1523,_G1524)?=h(e,r),_G1530?=f(_G1527)]
+decompose: h(_G1523,_G1524)?=h(e,r)
+systeme: [_G1523?=e,_G1524?=r,_G1526?=g(_G1530),_G1527?=h(a),_G1530?=f(_G1527)]
+expand: _G1526?=g(_G1530)
+systeme: [_G1523?=e,_G1524?=r,_G1527?=h(a),_G1530?=f(_G1527)]
+simplify: _G1523?=e
+systeme: [_G1524?=r,_G1527?=h(a),_G1530?=f(_G1527)]
+expand: _G1530?=f(_G1527)
+systeme: [_G1524?=r,_G1527?=h(a)]
+expand: _G1527?=h(a)
+systeme: [_G1524?=r]
+simplify: _G1524?=r
+X = g(f(h(a))),
+Y = h(a),
+C = e,
+V = r,
+Z = f(h(a)).
+\end{lstlisting}
+
+\begin{lstlisting}[caption ={Exemple d'execution avec comme choix le premier}]
+?- unifie([f(X, Y, h(C, V)) ?= f(g(Z), h(a), h(e, r)), Z ?= f(Y)], premier).
+systeme: [f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r)),_G1530?=f(_G1527)]
+decompose: f(_G1526,_G1527,h(_G1523,_G1524))?=f(g(_G1530),h(a),h(e,r))
+systeme: [_G1526?=g(_G1530),_G1527?=h(a),h(_G1523,_G1524)?=h(e,r),_G1530?=f(_G1527)]
+expand: _G1526?=g(_G1530)
+systeme: [_G1527?=h(a),h(_G1523,_G1524)?=h(e,r),_G1530?=f(_G1527)]
+expand: _G1527?=h(a)
+systeme: [h(_G1523,_G1524)?=h(e,r),_G1530?=f(h(a))]
+decompose: h(_G1523,_G1524)?=h(e,r)
+systeme: [_G1523?=e,_G1524?=r,_G1530?=f(h(a))]
+simplify: _G1523?=e
+systeme: [_G1524?=r,_G1530?=f(h(a))]
+simplify: _G1524?=r
+systeme: [_G1530?=f(h(a))]
+expand: _G1530?=f(h(a))
+X = g(f(h(a))),
+Y = h(a),
+C = e,
+V = r,
+Z = f(h(a)).
+\end{lstlisting}
+
+\chapter*{Question 3}
+
+\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
+?- trace_unif([X ?= e, u ?= I, f(a ) ?= g(Y )], aleatoire).
+system: [_G191?=e,u?=_G198,f(a)?=g(_G205)]
+simplify: _G191?=e
+system: [u?=_G198,f(a)?=g(_G205)]
+orient: u?=_G198
+system: [_G198?=u,f(a)?=g(_G205)]
+simplify: _G198?=u
+system: [f(a)?=g(_G205)]
+clash: f(a)?=g(_G205)
+No
+true.
+\end{lstlisting}
+
+\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
+?- trace_unif([X ?= e, u ?= I, f(a ) ?= g(Y )], premier).
+system: [_G191?=e,u?=_G198,f(a)?=g(_G205)]
+simplify: _G191?=e
+system: [u?=_G198,f(a)?=g(_G205)]
+orient: u?=_G198
+system: [_G198?=u,f(a)?=g(_G205)]
+simplify: _G198?=u
+system: [f(a)?=g(_G205)]
+clash: f(a)?=g(_G205)
+No
+true.
+\end{lstlisting}
+
+\begin{lstlisting}[caption ={Exemple d'execution avec choix aléatoire}]
+?- trace_unif([X ?= e, u ?= I, f(a ) ?= g(Y )], pondere).
+system: [_G191?=e,u?=_G198,f(a)?=g(_G205)]
+clash: f(a)?=g(_G205)
+No
+true.
+\end{lstlisting}
+
+\end{document}
