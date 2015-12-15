@@ -1,52 +1,57 @@
-:- op(20, xfy, [?=]).
+:- op(20,xfy,?=).
 
-print(Term):-
-	current_prolog_flag(print_write_option, Options),!,
-	write_term(Term, Options)
-.
-print(Term) :-
-    write_term(Term, [ portray(true),
-	                   numbervars(true),
-					   quoted(true)
-					 ])
-.
+% Prédicats d'affichage fournis
 
-choix_premier( [E|_], _, E, R):- %TODO
-	regle(E,R),!	
-.
+% set_echo: ce prédicat active l'affichage par le prédicat echo
+set_echo :- assert(echo_on).
 
-unifie([]):- true, !.
-unifie(bottom):- false, !.
-unifie(P) :-
-	write("systeme: "),print(P),nl,
-	choix_premier(P, _, E, R),
-	apply_strat(P, E, R, premier)
+% clr_echo: ce prédicat inhibe l'affichage par le prédicat echo
+clr_echo :- retractall(echo_on).
+
+% echo(T): si le flag echo_on est positionné, echo(T) affiche le terme T
+%          sinon, echo(T) réussit simplement en ne faisant rien.
+
+echo(T) :- echo_on, !, write(T).
+echo(_). 
+
+select_strat(premier, P, E, R):-
+	choix_premier(P, _, E, R)
 .
 
-unifie([], _):- true, !.
-unifie(P, premier):- unifie(P),! .
-unifie(P, pondere):- 
-	choix_pondere(P,_,E, R),
-	apply_strat(P, E, R, pondere),!
+select_strat(pondere, P, E, R):-
+	choix_pondere(P, _, E, R)
 .
 
-unifie(P, aleatoire):-
-	choix_aleatoire(P, _, E, R),
-	apply_strat(P, E, R, aleatoire),!
+select_strat(aleatoire, P, E, R):-
+	choix_aleatoire(P, _, E, R)
 .
-
-unifie(P, dernier):-
-	choix_dernier(P, _, E, R),
-	apply_strat(P, E, R, dernier),!
-.	
-
-apply_strat(P, E, R, Strat):-
-	write("choix: "),print(E),write(" règle: "),print(R),nl,
+select_strat(dernier, P, E, R):-
+	choix_dernier(P, _, E, R)
+.
+apply_strat([], _):- true, !.
+apply_strat(bottom, _):- false, !.
+apply_strat(P, Strat):-
+	select_strat(Strat, P, E, R),
+	echo(R),echo(": "),echo(E),echo("\n"),
 	reduit(R, E, P, Q),
-	unifie(Q, Strat)
+	apply_strat(Q, Strat), !
 .
 
-%TODO: question 3
+unifie(P, S):-
+	clr_echo,
+	apply_strat(P, S)
+.
+
+trace_unif(P,S):-
+	set_echo,
+	echo("system: "),echo(P),echo("\n"),
+	(
+		apply_strat(P, S), echo("Yes"),!
+	;	
+		echo("No")
+	)
+.
+
 select_rule([], _, _, _):- false, !.%on a parcouru la liste des règle sans en trouver une qui fonctionne
 select_rule( [Next |  MasterList], [], Pbase, P, R, E):-
 	select_rule(MasterList, Next, Pbase, P, R, E)
@@ -56,8 +61,6 @@ select_rule(MasterList, [ _ | ListRules], Pbase, [], R, E):-
 .
 select_rule( MasterList,[FirstRule | ListRules], Pbase, [Ep|P], R, E):-
 	(
-		
-		write("test: "),print(Ep),write(" avec "),print(FirstRule),nl,
 		regle(Ep, FirstRule),
 		R = FirstRule,
 		E = Ep,
@@ -73,6 +76,9 @@ liste_pondere([ [clash, check],
 				[expand]
 			  ]):- 
 	true 
+.
+choix_premier( [E|_], _, E, R):- %TODO
+	regle(E,R),!	
 .
 
 choix_pondere(P, _, E, R):-
@@ -90,7 +96,7 @@ choix_dernier(P, _, E, R):-
 	regle(E, R),
 	!
 .
-%TODO: proposer d'autres strats(random ?)
+
 %TODO: en fait il faut enlever E de P dans choix
 
 
