@@ -99,15 +99,21 @@ occur_check_list(V, [C|T]) :-
 	occur_check_list(V, T);
 	V == C
 .
+
+unif_list([], [],[]):- true.
+unif_list([L|List1], [R|List2], [L ?= R| Rp]):-
+	unif_list(List1, List2, Rp)
+.
+
 apply(simplify, E, P, Q) :-
 	split(E, X, T),
 	X = T,
-	delete(P, E, Q)
+	delete_elem(E, P, Q)
 .
 apply(rename, E, P, Q):-
 	split(E, X, T),
 	X = T,
-	delete(P, E, Q)
+	delete_elem(E, P, Q)
 .
 
 /*
@@ -162,24 +168,20 @@ decomp([X|XTail], [Y|YTail], P) :-
 apply(expand, E, P, Q) :-
 	split(E, X, T),
 	X = T,
-	delete(P, E, Q)
+	delete_elem(E, P, Q)
 .
 
 apply(check, _, _, bottom):- false . %TODO: surement de la merde
 apply(orient, E, P, [ R ?= L | Tp ]) :-
 	split(E, L, R),
-	delete(P, E, Tp)
-.
-unif_list([], [],[]):- true.
-unif_list([L|List1], [R|List2], [L ?= R| Rp]):-
-	unif_list(List1, List2, Rp)
+	delete_elem(E, P, Tp)
 .
 apply(decompose, E, P, S):-
 	split(E, L, R),
 	L =.. [_|ArgsL],
 	R =.. [_|ArgsR],
 	unif_list(ArgsL, ArgsR, Res),
-	delete(P, E, Pp),
+	delete_elem(E, P, Pp),
 	union(Res, Pp, S)
 .
 /*
@@ -195,6 +197,13 @@ apply(decompose, E, P, Q):-
 */
 apply(clash, _, _, bottom):- false . %TODO: surement n'imp'
 
+
+
+delete_elem(_, [], []) :- print('on ne devrait jamais passer par ici dans ce projet'),nl , !.
+delete_elem(Elem, [Elem|Set], Set):- ! .%Achtung
+delete_elem(Elem, [E|Set], [E|R]):-
+	delete_elem(Elem, Set, R)
+.
 
 apply_rules(_, [], P, P):- true.
 apply_rules(E, [FirstRule | ListRules], P, Q):-

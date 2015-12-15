@@ -36,12 +36,27 @@ test_apply_decompose():-
 	write("f(a) ?= f(b), [a ?= b]"),
 	apply(decompose, f(a) ?= f(b), [f(a)?=f(b)], [a?=b]),
 	writeOK,
-
-	write("f(a) ?= g(a), [a ?= a]"), 
-	apply(decompose, f(a) ?= g(a), [f(a) ?= g(a)], [a?=a]),
+	
+	write("f(a) ?= f(a), [a ?= a]"), 
+	apply(decompose, f(a) ?= f(a), [], [a?=a]),
 	writeOK,
 
-	write("f(g(X), W) ?= f(A, Q), [g(X) ?= A, W ?= Q]"),
+	write("f(a,b,c) ?= f(d, e, f), [a ?= d, b ?= e, c ?= f]"), 
+	apply(decompose, f(a, b, c) ?= f(d, e, f), [], [a?=d, b ?= e, c ?= f ]),
+	writeOK,
+
+
+	write("f(X) ?= f(a), [X ?= a]"), 
+	apply(decompose, f(X) ?= f(a), [], [X?=a]),
+	writeOK,
+
+
+	write("f(a, X , b, Y) ?= f(d, e, f, g), [a ?= d, X ?= e, b ?= f, Y?= g]"), 
+	apply(decompose, f(a, X, b, Y) ?= f(d, e, f, g), [], [a?=d, X ?= e, b ?= f, Y ?= g]),
+	writeOK,
+
+
+write("f(g(X), W) ?= f(A, Q), [g(X) ?= A, W ?= Q]"),
 	apply(decompose, f(g(X), W) ?= f(A, Q), [f(g(X), W) ?= f(A, Q)], [g(X)?=A,W?=Q]),
 	writeOK
 .
@@ -49,9 +64,20 @@ test_apply_decompose():-
 test_apply_rename() :-
 	writeln("==== Apply : Rename ===="),
 
+	write("a?=Y, []"),
+	apply(rename, a?=Y, [a?=Y], []),
+	Y == a, % Je crois que ca doit etre ca...
+	writeOK,
+
+
 	write("X?=Y, []"),
-	apply(rename, X?=Y, [X?=Y], []),
-	X == Y, % Je crois que ca doit etre ca...
+	apply(rename, X2?=Y2, [X2?=Y2], []),
+	X2 == Y2, % Je crois que ca doit etre ca...
+	writeOK,
+
+	write("X?=Y,[X ?= a] => [Y ?= a]"),
+	apply(rename, X1?=Y1, [X1?=Y1, X1 ?= a], [Y1 ?= a]),
+	X1 == Y1, % Je crois que ca doit etre ca...
 	writeOK
 .
 
