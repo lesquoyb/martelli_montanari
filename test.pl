@@ -35,6 +35,9 @@ tests() :-
 
 test_unifie():-
 	unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(Y)]),
+	write("exemple prof juste: ok"),nl,nl,
+	not(unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(X)])),
+	write("exemple prof faux: ok"),nl,nl,
 	unifie([a?=a]),
 	not(unifie([a?=b])),
 	not(unifie([a ?= X, X ?= b]))

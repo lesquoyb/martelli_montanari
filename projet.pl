@@ -11,16 +11,20 @@ print(Term) :-
 					 ])
 .
 
+choix_premier( [E|P], _, E, R):- %TODO
+	regle(E,R),!	
+.
 
-unifie([]):- true.
-unifie(bottom):- false.
-unifie([E|P]) :-
-	write("systeme: "),print([E|P]),nl,
-	regle(E, R),
+unifie([]):- true, !.
+unifie(bottom):- false, !.
+unifie(P) :-
+	write("systeme: "),print(P),nl,
+	choix_premier(P, _, E, R),
 	write(R),write(": "),print(E),nl,
 	reduit(R, E, P, Q),
 	unifie(Q)
 .
+
 
 regle(E, decompose):-
 	not(atom(E)),
