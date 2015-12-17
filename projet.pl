@@ -14,6 +14,8 @@ clr_echo :- retractall(echo_on).
 echo(T) :- echo_on, !, write(T).
 echo(_). 
 
+echoln(T) :- echo(T), nl.
+
 %select_strat choisi une equation a l'aide de predicat correspondant a la strategie passee en parametre 
 select_strat(premier, P, E, R):-
 	choix_premier(P, _, E, R)
@@ -35,9 +37,9 @@ unifie(P):- unifie(P, premier).
 unifie([], _):- true, !.
 unifie(bottom, _):- false, !. %Si on a bottom => c'est un echec
 unifie(P, Strat):-
-	echo("system: "),echo(P),echo("\n"),
+	echo('system: '),echoln(P),
 	select_strat(Strat, P, E, R),
-	echo(R),echo(": "),echo(E),echo("\n"),
+	echo(R),echo(': '),echoln(E),
 	reduit(R, E, P, Q),
 	unifie(Q, Strat), !
 .
@@ -50,9 +52,9 @@ unif(P, S):-
 trace_unif(P,S):-
 	set_echo,
 	(
-		unifie(P, S), echo("Yes"),!
+		unifie(P, S), echoln('Yes'), !
 	;	
-		echo("No")
+		echo('No')
 	)
 .
 %sous fonction du predicat de selection d'equation avec choix pondere
