@@ -29,19 +29,15 @@ tests() :-
 
 	nl,writeln("====== Test: Unifie ===="),nl,
 	test_unifie(),
-
-	write("Tous les tests sont passé avec succes")
+	nl,
+	write("Tous les tests sont passé avec succes"),!
 .
 
 test_unifie():-
-	unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(Y)]),
-	write("exemple prof juste: ok"),nl,nl,
-	not(unifie([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(X)])),
-	write("exemple prof faux: ok"),nl,nl,
-	unifie([a?=a]),
-	not(unifie([a?=b])),
-	not(unifie([a ?= X, X ?= b]))
-	%TODO
+	unif([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(Y)], premier),
+	write("exemple prof juste: ok"),
+	not(unif([f(X, Y) ?= f(g(Z), h(a)), Z ?= f(X)], premier)),
+	write("exemple prof faux: ok")
 .
 
 test_reduit_decompose():-
