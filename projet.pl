@@ -105,13 +105,22 @@ choix_dernier(P, _, E, R):-
 	!
 .
 %regle teste si on peut appliquer la regle R (deuxieme parametre) a l'equation E (premier parametre)
+
+regle(E, clean):-
+	split(E,L,R),
+	not(var(L)),
+	L == R
+.
+
 regle(E, decompose):-
 	not(atom(E)),
 	split(E, X, Y),
 	compound(X),
 	compound(Y),
 	compound_name_arity(X, N, A),
-	compound_name_arity(Y, N, A)
+	compound_name_arity(Y, N2, A2),
+	N == N2,
+	A == A2
 .
 regle(E, simplify):-
 	split(E, L, R),
@@ -176,6 +185,9 @@ unif_list([L|List1], [R|List2], [L ?= R| Rp]):-
 	unif_list(List1, List2, Rp)
 .
 %reduit applique la regle R (premier argument) a l'equation E appartenant a P, et renvoie le nouvel ensemble Q
+reduit(clean, E, P, Q):-
+	delete_elem(E,P,Q)
+.
 reduit(simplify, E, P, Q) :-
 	split(E, X, T),
 	X = T,
